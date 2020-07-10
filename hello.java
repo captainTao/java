@@ -11,6 +11,54 @@ JCP组织：Java Community Process
 RI：Reference Implementation
 TCK：Technology Compatibility Kit
 
+/*
+1.两个对象的 hashCode()相同，则 equals()也一定为 true，对吗？
+不对，两个对象的 hashCode()相同，equals()不一定 true。
+
+代码示例：
+
+String str1 = "通话";
+String str2 = "重地";
+System.out.println(String.format("str1：%d | str2：%d",  str1.hashCode(),str2.hashCode()));
+System.out.println(str1.equals(str2));
+执行的结果：
+
+str1：1179395 | str2：1179395
+
+false
+
+//代码解读：很显然“通话”和“重地”的 hashCode() 相同，然而 equals() 则为 false，因为在散列表中，hashCode()相等即两个键值对的哈希值相等，然而哈希值相等，并不一定能得出键值对相等。
+
+
+2. String 不属于基础类型，基础类型有 8 种：byte、boolean、char、short、int、float、long、double，而 String 属于对象
+
+
+3.栈内存和堆内存的区别？
+ 栈：存放局部变量和堆中对象变量的引用，由系统分配，先进后出，更新速度快，存放变量生命周期结束，立即被释放。栈内存只通过一个线程来运行和使用，不能被其他线程所访问。
+ 堆：存放对象，由程序员分配，先进先出，更新速度慢，没有引用指向的时候，会被系统内存回收机制不定时回收。堆是被所有线程共享的，所以存储在堆中的对象是全局可以被访问的，在JVM中只有一个堆。
+
+
+4.内存划分为那些区？
+ 寄存器(Register) --最快的存储区；
+ 栈内存（Stack）--存放：局部变量，函数参数值，操作数栈，运行时常量池，数组引用，方法返回地址；内存由系统自动分配；
+ 堆内存（Heap）--存放：new的对象和数组；内存由程序员分配和释放；
+ 本地方法区（Native Method）--是为执行本地方法（Native Method）服务的；
+ 方法区（）--存放：类信息，静态变量，常量以及编译后的代码；
+ 非RAM存储；
+
+
+5.向量和数组的区别
+https://blog.csdn.net/qq_37723158/article/details/79024838
+向量和数组相似，都可以保存一组数据（数据列表）。
+
+a.向量的容量是可变的; 数组不可变。
+b.向量的任意位置可以插入不同类型的对象，无需考虑对象的类型，而数组是同一类型。
+c.向量作为一种对象提供了比数组更多的方法。
+d.向量只能存储对象，不能直接存储简单数据类型，而数组可以。
+*/
+
+
+
 /**
   *java：这个可执行程序其实就是JVM，运行Java程序，就是启动JVM，然后让JVM执行指定的编译后的代码；
   *javac：这是Java的编译器，它用于把Java源码文件（以.java后缀结尾）编译为Java字节码文件（以.class后缀结尾）；
@@ -418,7 +466,7 @@ for (;;) {
 }
 
 
-// for each 可以遍历list,map, for each不是关键字；
+// foreach 可以遍历list,map, foreach不是关键字；
 public class Main {
     public static void main(String[] args) {
         int[] ns = { 1, 4, 9, 16, 25 };
@@ -768,7 +816,18 @@ class Person {
 
 
 
+// 抽象方法
+// -------------
+// 多态中如果父类的方法本身不需要实现任何功能，
+// 仅仅是为了定义方法签名，目的是让子类去覆写它，那么，可以把父类的方法声明为抽象方法：
+
+abstract class Person {
+    public abstract void run();
+}
+
+
 // 抽象类
+// 面向抽象编程
 // abstract抽象方法
 // --------------
 
@@ -908,6 +967,7 @@ class Person {
 
 
 8.接口的静态字段
+// 因为interface是一个纯抽象类，所以它不能定义实例字段。但是，interface是可以有静态字段的，并且静态字段必须为final类型：
 public interface Person {
     // 编译器会自动在定义字段前面加上public statc final:
     int MALE = 1;
@@ -1159,6 +1219,16 @@ boolean b2 = Boolean.parseBoolean("FALSE"); // false
 // Integer有个getInteger(String)方法，它不是将字符串转换为int，而是把该字符串对应的系统变量转换为Integer：
 Integer.getInteger("java.version"); // 版本号，11
 
+// 字符串转为浮点函数
+//方法一
+double score = Double.valueOf(sscore).doubleValue();
+double score = Double.parseDouble(sscore);
+
+//方法二
+int a = Integer.valueOf(s).intValue();
+nteger.parseInt(String s);
+
+
 
 // char和string互转
 char[] cs = "Hello".toCharArray(); // String -> char[]
@@ -1245,6 +1315,8 @@ StringConcatFactory会自动把字符串连接操作优化为数组复制或者S
 StringBuilder是可变对象，用来高效拼接字符串；
 StringBuilder可以支持链式操作，实现链式操作的关键是返回实例本身；
 StringBuffer是StringBuilder的线程安全版本，现在很少使用。
+
+StringBuffer 和 StringBuilder 最大的区别在于，StringBuffer 是线程安全的，而 StringBuilder 是非线程安全的，但 StringBuilder 的性能却高于 StringBuffer，所以在单线程环境下推荐使用 StringBuilder，多线程环境下推荐使用 StringBuffer。
 
 要高效拼接字符串，应该使用StringBuilder。
 StringJoiner内部实际上就是使用了StringBuilder，所以拼接效率和StringBuilder几乎是一模一样的。
@@ -1406,3 +1478,13 @@ public class FreshJuiceTest {
 
 Weekday.SUN.name()  // "SUN",枚举的原型值
 Weekday.MON.ordinal(); // 1，枚举的下标，从0开始
+
+
+
+异常处理
+----------
+try{
+    ....
+}catch(Exception e){
+    ....
+}
