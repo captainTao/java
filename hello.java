@@ -11,6 +11,21 @@ JCP组织：Java Community Process
 RI：Reference Implementation
 TCK：Technology Compatibility Kit
 
+
+/*
+eclipse查看jar源代码的方式：
+https://blog.csdn.net/xiashenbao/article/details/90691544
+进入：http://java-decompiler.github.io/
+选择JD－Eclipse下载
+https://blog.csdn.net/dufufd/article/details/79415141
+
+intelli idea查看jar
+https://blog.csdn.net/qq_39704682/article/details/86610092
+
+*/
+
+
+
 /*
 1.两个对象的 hashCode()相同，则 equals()也一定为 true，对吗？
 不对，两个对象的 hashCode()相同，equals()不一定 true。
@@ -47,6 +62,13 @@ false
  非RAM存储；
 
 
+1、栈区（stacksegment）—由编译器自动分配释放,存放函数的参数值，局部变量的值等，具体方法执行结束之后，系统自动释放JVM内存资源
+2、堆区（heapsegment）—一般由程序员分配释放，存放由new创建的对象和数组，jvm不定时查看这个对象，如果没有引用指向这个对象就回收
+3、静态区（datasegment）—存放全局变量，静态变量和字符串常量，不释放
+4、代码区（codesegment）—存放程序中方法的二进制代码，而且是多个对象共享一个代码空间区域
+
+
+
 5.向量和数组的区别
 https://blog.csdn.net/qq_37723158/article/details/79024838
 向量和数组相似，都可以保存一组数据（数据列表）。
@@ -55,6 +77,15 @@ a.向量的容量是可变的; 数组不可变。
 b.向量的任意位置可以插入不同类型的对象，无需考虑对象的类型，而数组是同一类型。
 c.向量作为一种对象提供了比数组更多的方法。
 d.向量只能存储对象，不能直接存储简单数据类型，而数组可以。
+
+
+6.接口和抽象类有哪些区别？
+a.一个类可以实现很多个接口，但是只能继承一个抽象类。
+b.抽象类可以有构造函数；接口不能有。
+c.抽象类不一定非要有抽象方法,而接口都是抽象方法。
+d.接口中的方法默认使用 public 修饰；抽象类中的方法可以是任意访问修饰符。
+e.抽象类可以有 main 方法，并且我们能运行它；接口不能有 main 方法
+f.接口中的字段是public statc final类型，而抽象类中的字段可以随意修饰。
 */
 
 
@@ -1185,7 +1216,7 @@ s.replace('l', 'w'); // "hewwo"，所有字符'l'被替换为'w'
 s.replace("ll", "~~"); // "he~~o"，所有子串"ll"被替换为"~~"
 // 正则替换
 String s = "A,,B;C ,D";
-s.replaceAll("[\\,\\;\\s]+", ","); // "A,B,C,D"
+s.replaceAll("[\\,\\;\\s]+", ","); // "A,B,C,D", 不改变s的值
 
 // 分割
 String s = "A,B,C,D";
@@ -1487,4 +1518,382 @@ try{
     ....
 }catch(Exception e){
     ....
+}
+
+
+集合
+----------
+/*
+Java的java.util包主要提供了以下三种类型的集合：
+
+List：一种有序列表的集合，例如，按索引排列的Student的List；实现类有ArrayList，LinkedList等;
+Set：一种保证没有重复元素的集合，例如，所有无重复名称的Student的Set；
+Map：一种通过键值（key-value）查找的映射表集合，例如，根据Student的name查找对应Student的Map。
+
+
+
+java集合使用统一的Iterator遍历，尽量不要使用遗留接口。不应该继续使用：
+Enumeration<E>：已被Iterator<E>取代。
+Hashtable：一种线程安全的Map实现；
+Vector：一种线程安全的List实现；
+Stack：基于Vector实现的LIFO的栈。
+
+
+Iterator<Integer> iterator = list.iterator();
+start != iterator.next().intValue();
+
+*/
+
+
+
+/*
+
+List
+-------
+ArrayList和LinkedList, 通常情况下，我们总是优先使用ArrayList。
+
+list不同于数组,它是数组的再一次封装。
+
+
+
+// 创建：
+List<String> list = new ArrayList<>(); // 可以修改list,
+List<Integer> list = List.of(1, 2, 5); // 不可以修改list, JDK1.8不能这样用，具体哪个版本开始可以这样用？JDK11?
+
+
+.add(E e)：                 在末尾添加一个元素，返回boolean
+.add(int index, E e)：      在指定索引添加一个元素：返回为空
+.remove(int index)           删除指定索引的元素：返回删除的元素
+.remove(Object e)           删除某个元素：返回boolean
+.get(int index)             获取指定索引的元素：
+.size()                     获取链表大小（包含元素的个数）：
+.contains(object)           返回boolean,是否包含这个元素
+.indexOf(object)            返回对应index, 返回-1表示没有找到
+
+List还允许添加null           由List.of建立的list因为只读，无法添加新的元素，这儿只能用new ArrayList<>()；
+
+
+get(int index)方法只有ArrayList的实现是高效的，换成LinkedList后，索引越大，访问速度越慢;
+要始终坚持使用迭代器Iterator来访问List.因为效率较高。
+有两个方法： hasNext() next()
+*/ 
+
+
+/*添加*/
+import java.util.List;
+import java.util.ArrayList;
+
+public class Main {
+    public static void main(String[] args) {
+        // List.of()这种返回的是一个只读list,这种方式add(),remove()会出错；
+        // List<String> list = List.of("apple", "pear", "banana"); 
+
+        List<String> list = new ArrayList<>();
+        list.add("apple");
+        list.add("apple");
+        list.add(null); // 可以添加null
+        list.add(list.get(2));
+        
+        for (String s : list) {
+            System.out.println(s);
+        }
+    }
+}
+
+/*遍历*/
+import java.util.Iterator;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) {
+        List<String> list = List.of("apple", "pear", "banana");
+        for (Iterator<String> it = list.iterator(); it.hasNext(); ) { // iterator遍历
+            String s = it.next();
+            System.out.println(s);
+        }
+        for (String s : list) {  // foreach遍历，只要实现了Iterable接口的集合类都可以直接用for each循环来遍历，Java编译器本身并不知道如何遍历集合对象，但它会自动把for each循环变成Iterator的调用
+            System.out.println(s);
+        }
+    }
+}
+
+
+/*
+list和array互转:
+
+// 转为array
+.toArray();
+.toArray(list.size());
+
+// 转为list
+List.of(array); JDK11之后，返回的是一个只读List
+Arrays.asList(array); JDK11之前，返回的List不一定就是ArrayList或者LinkedList，因为List只是一个接口。
+*/
+
+import java.util.List;
+import java.util.ArrayList;
+
+public class Main {
+    public static void main(String[] args) {
+        List<String> list = List.of("apple", "pear", "banana"); 
+
+        // 方法一：
+        Object[] array = list.toArray(); // 这儿取出来为object
+        // String array[] = list.toArray(new String[3]);// 这个取出来为string
+        
+        for (Object s : array) {
+            System.out.println(s);
+        }
+        
+        // 方法二：
+        /*
+        List<Integer> list = List.of(12,34,56);
+        Integer[] array = list.toArray(new Integer[list.size()]); //把当前list传入到一个新的数组Integer
+
+        // Integer[] array = list.toArray(Integer[]::new); // 这个是另外一种方法
+
+        // List<Integer> list1 = List.of(array); // array转为list.
+       
+        for (Integer n : array){
+            System.out.println(n);
+        }
+        */
+
+    }
+}
+
+Collections.shuffle(list): 可以打乱一个list顺序
+
+
+
+// java8 Stream
+// -------------
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.IntSummaryStatistics;
+import java.util.stream.Collectors;
+import java.util.Random;
+
+/*
+* stream()
+* ----------
+* forEach
+* map
+* reduce
+* filter
+* limit
+* sorted
+* Collectors
+* distinct
+* collect
+* */
+public class Main {
+    public static void main(String[] args) {
+
+        /**
+        * .stream()
+         *
+         * .filter()
+         * .isEmpty()
+         * .collect(Collectors.toList())
+         * import java.util.Arrays;
+         * import java.util.List;
+         * import java.util.stream.Collectors;
+        * */
+        List<String> strings = Arrays.asList("abc", "", "bc", "efg", "abcd","", "jkl");
+        List<String> filtered = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.toList());
+        System.out.println(filtered);
+
+        /**
+         * .parallelStream()
+         *
+         * .filter()
+         * .isEmpty()
+         * import java.util.Arrays;
+         * import java.util.List;
+         * */
+        List<String> strings = Arrays.asList("abc", "", "bc", "efg", "abcd"," ", "jkl");
+        // 获取空字符串的数量
+        long count = strings.parallelStream().filter(string -> string.isEmpty()).count();
+        System.out.println(count);
+
+
+        /**
+        * .forEach()
+         * .limt()
+         *
+         *  import java.util.Random;
+        * */
+        Random random = new Random();
+        random.ints().limit(5).forEach(System.out::println); //用系统函数使用::
+
+        /**
+        * .map()
+         *
+         * .distinct()
+         * .collect()
+         * import java.util.Arrays;
+         * import java.util.List;
+         * import java.util.stream.Collectors;
+        * */
+        List<Integer> numbers = Arrays.asList(3, 2, 2, 3, 7, 3, 5);
+        // 获取对应的平方数
+        List<Integer> squaresList = numbers.stream().map( i -> i*i).collect(Collectors.toList());
+        System.out.println(squaresList);
+
+
+        /**
+        * reduce()
+         *
+         * orElse()
+        * */
+        List<Integer> list = Arrays.asList(2, 4, 6 ,7);
+        // int sum = list.stream().reduce(Integer::sum).orElse(0); // orElse()这儿相当于是个可选项
+        int sum = list.stream().reduce((i, j) -> (i*10 + j)).orElse(0);
+        System.out.println(sum);
+
+
+        /**
+        * filter()
+         *
+         * .isBlank()
+         * .count()
+         * import java.util.Arrays;
+         * import java.util.List;
+        * */
+        List<String>strings = Arrays.asList("abc", "", "bc", "efg", "abcd"," ", "jkl");
+        // 获取空字符串的数量
+        long count = strings.stream().filter(string -> string.isBlank()).count();
+        System.out.println(count);
+
+
+        /**
+         * 统计
+         *
+         * import java.util.Arrays;
+         * import java.util.List;
+         * import java.util.IntSummaryStatistics;
+         */
+        List<Integer> numbers = Arrays.asList(3, 2, 2, 3, 7, 3, 5);
+        IntSummaryStatistics stats = numbers.stream().mapToInt((x) -> x).summaryStatistics();
+
+        System.out.println("列表中最大的数 : " + stats.getMax());
+        System.out.println("列表中最小的数 : " + stats.getMin());
+        System.out.println("所有数之和 : " + stats.getSum());
+        System.out.println("平均数 : " + stats.getAverage());
+
+
+        /**
+         * Collectors
+         *
+         * import java.util.Arrays;
+         * import java.util.List;
+         * import java.util.stream.Collectors;
+         * */
+        List<String>strings = Arrays.asList("abc", "", "bc", "efg", "abcd","", "jkl");
+        List<String> filtered = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.toList());
+        System.out.println("筛选列表: " + filtered);
+        String mergedString = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.joining(", "));
+        System.out.println("合并字符串: " + mergedString);
+
+
+    }
+}
+
+
+
+
+// 判断对象列表中是否包含contains，需要对equals进行重写：
+// 如果list.contains()不包含，则返回-1
+/*
+equals的正确写法：
+1.先确定实例“相等”的逻辑，即哪些字段相等，就认为实例相等；
+2.用instanceof判断传入的待比较的Object是不是当前类型，如果是，继续比较，否则，返回false；
+3.对引用类型用Objects.equals()比较，对基本类型直接用==比较。
+*/
+
+
+/*
+一个类如果覆写了equals()，就必须覆写hashCode()，并且覆写规则是：
+
+如果equals()返回true，则hashCode()返回值必须相等；
+
+如果equals()返回false，则hashCode()返回值尽量不要相等。
+
+实现hashCode()方法可以通过Objects.hashCode()辅助方法实现。
+
+*/
+import java.util.List;
+import java.util.Objects;
+
+public class Main {
+    public static void main(String[] args) {
+        List<Person> list = List.of(
+                new Person("Xiao", "Ming", 18),
+                new Person("Xiao", "Hong", 25),
+                new Person("Bob", "Smith", 20)
+        );
+        boolean exist = list.contains(new Person("Bob", "Smith", 20));
+        System.out.println(exist ? "测试成功!" : "测试失败!");
+    }
+}
+
+class Person {
+    String firstName;
+    String lastName;
+    int age;
+
+    public Person(String firstName, String lastName, int age) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
+    }
+
+    // 对对象的equals进行覆写
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Person) {
+            Person p = (Person) o;
+            return Objects.equals(this.firstName, p.firstName) && Objects.equals(this.lastName, p.lastName) && this.age == p.age;
+        }
+        return false;
+    }
+}
+
+
+/*
+ *  HashMap
+
+ * .put(key, value) 
+ * .remove(key)        // value
+ * .get(key)           // value
+ * .containsKey(key)   // bool
+ * .containsValue(vaule)  // bool
+*/
+
+
+import java.util.Map;
+import java.util.HashMap;
+
+public class Main {
+    public static void main(String[] args) {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("apple", 123);
+        map.put("pear", 456);
+        map.put("banana", 352);
+        System.out.println(map.get("apple")); // 123
+        map.put("apple", 789); // 再次放入apple作为key，但value变为789
+        System.out.println(map.get("apple")); // 789
+        System.out.println(map.remove("apple")); // 789
+
+        // 遍历foreach
+        for (String key: map.keySet()){
+            System.out.println(key +" = "+ map.get(key));
+        }
+        // 遍历entrySet
+        for (Map.Entry<String, Integer> entry : map.entrySet()){
+            System.out.println(entry.getKey() + " = " + entry.getValue());
+        }
+    }
 }

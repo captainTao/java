@@ -1,5 +1,5 @@
 
-一、选择题：
+一、选择题：(每道题5分，共35分，多选不得分，少选一个1分，全对5分)
 1.BC，2.D 3.ABCD 4.BCD 5.AD 6.B 7.ABD
 1.下列说法正确的有()
 A.JRE为开发工具包，提供了开发环境和运行环境。
@@ -45,25 +45,25 @@ D.静态方法经常用于工具类,也经常用于辅助方法
 
 
 
-二、问答题:
-1. 基础数据类型有哪些？
+二、问答题:（共17分）
+1. 基础数据类型有哪些？（2分）
 基础类型有 8 种：byte、boolean、char、short、int、float、long、double
 
-2. == 和 equals 的区别是什么？
+2. == 和 equals 的区别是什么？（2分）
 == 用于基本类型：比较的是值是否相同；
-euqals 用于引用类型：比较的是引用是否相同；
+euqals 用于引用类型：比较的是引用是否相同（若类中覆盖了equals(),一般是比较内容，具体以equals的实现为准）；
 
-3. 抽象类能使用 final 修饰吗？
+3. 抽象类能使用 final 修饰吗？（3分）
 不能，定义抽象类就是让其他类继承的，如果定义为 final 该类就不能被继承，这样彼此就会产生矛盾，所以 final 不能修饰抽象类
 
-4. 普通类和抽象类有哪些区别？
+4. 普通类和抽象类有哪些区别？（4分）
 普通类不能包含抽象方法，抽象类可以包含抽象方法。
 抽象类不能直接实例化，普通类可以直接实例化。
 
-5. java操作字符串的都有哪些类？
+5. java操作字符串的都有哪些类？（2分）
 String、StringBuffer、StringBuilder。
 
-6.接口和抽象类有哪些区别？
+6.接口和抽象类有哪些区别？（4分）
 a.一个类可以实现很多个接口，但是只能继承一个抽象类。
 b.抽象类可以有构造函数；接口不能有。
 c.抽象类不一定非要有抽象方法,而接口都是抽象方法。
@@ -72,7 +72,7 @@ e.抽象类可以有 main 方法，并且我们能运行它；接口不能有 ma
 f.接口中的字段是public statc final类型，而抽象类中的字段可以随意修饰。
 
 
-三、编程题：
+三、编程题：（每道题8分，共48分）
 1.写程序,完成下列功能:
 a.提示用户输入姓名，成绩
 b.并用StringBuilder/StringJoiner拼接成字符串输出。
@@ -81,73 +81,141 @@ c.对输入成绩进行判断，分优，良，及格，差，并输出。
 import java.util.Scanner;
 import java.util.StringJoiner;
 
-public class Main{
-    public static void main(String args[]) {
-        
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("输入你的名字：");
-        String name = scanner.nextLine();
-        
-        System.out.println("输入你的成绩：");
-        String sscore = scanner.nextLine();
-        
-        StringJoiner sj = new StringJoiner(", ", "Hi, ", "!");
-        sj.add(name);
-        sj.add("你的成绩是:"+ sscore);
-        System.out.println(sj);
-        
-//      double score = Double.valueOf(sscore).doubleValue();
-        double score = Double.parseDouble(sscore);
-        System.out.println(score);
+public class Main {
+
+    public static void main(String[] args) {
+        String name = getName();
+        double score = getScore();
+        String result = judgeScore(score);
+
+//      * StringBuilder str = new StringBuilder();
+//      * str.append("Hi " + name +", your score is " + score + ", " +result + "!");
+
+        StringJoiner str = new StringJoiner(", ", "Hi ", "!");
+        str.add(name).add("your score is " + score).add(result);
+        System.out.println(str);
+    }
+
+    private static String getName() {
+        String name = "";
+        boolean flagName = true;
+        System.out.println("请输入姓名：");
+        while (flagName) {
+            Scanner scan = new Scanner(System.in);
+            if (scan.hasNextLine()) {
+                name = scan.nextLine();
+                if (name.replaceAll(" ", "").length() != 0) {
+                    flagName = false;
+                } else {
+                    System.out.println("输入姓名为空白, 请重新输入!");
+                }
+            } else {
+                System.out.println("输入姓名为空，请重新输入！");
+            }
+        }
+        return name;
+    }
+
+    private static float getScore() {
+        float score = 0;
+        boolean flagScore = true;
+        System.out.println("请输入成绩：");
+        while (flagScore) {
+            Scanner scan = new Scanner(System.in);
+            if (scan.hasNextFloat()) {
+                score = scan.nextFloat();
+                if (score >= 0 && score <= 100) {
+                    flagScore = false;
+                } else {
+                    System.out.println("输入成绩错误，请重新输入!");
+                }
+            } else {
+                System.out.println("成绩格式错误，请重新输入!");
+            }
+        }
+        return score;
+    }
+
+    private static String judgeScore(double score) {
         if (score >= 90) {
-            System.out.println("你的成绩为优");
-        }else if(score >= 70) {
-            System.out.println("你的成绩为良");
-        }else if(score >= 60) {
-            System.out.println("你的成绩为及格");
-        }else {
-            System.out.print("你的成绩为差");
+            return " 优";
+        } else if (score >= 70) {
+            return "良";
+        } else if (score >= 60) {
+            return "及格";
+        } else {
+            return "差";
         }
     }
 }
+
+
 
 2.程序题，跟电脑划拳，用户输入石头剪刀布后，然后打印输出谁赢了。
+
+
 import java.util.Scanner;
 
-public class Main{
-    public static void main(String args[]) {
-        
-        System.out.println("请选择:");
+public class Main {
+
+    public static void main(String[] args) {
+        System.out.println("请选择对应序号:");
         System.out.println(" 1: 石头");
         System.out.println(" 2: 剪刀");
-        System.out.println(" 3: 布 \n");
-        
-        Scanner scanner = new Scanner(System.in);
-        int userChoice = scanner.nextInt();
-        if(userChoice > 3 || userChoice < 0) {
-            System.out.println("你不按常理出牌！");
-            return;
+        System.out.println(" 3: 布");
+        judgeChoice(getUserChoice(), getComputerChoice());
+    }
+
+    private static int getUserChoice() {
+        boolean userChoiceFlag = true;
+        int userChoice = 0;
+        while (userChoiceFlag) {
+            Scanner scanner = new Scanner(System.in);
+            if (scanner.hasNextInt()) {
+                userChoice = scanner.nextInt();
+                if (userChoice < 1 || userChoice > 3) {
+                    System.out.println("你不按常理出拳！请重新选择对应序号：");
+                    continue;
+                }
+                userChoiceFlag = false;
+            } else {
+                System.out.println("输入为非整数！请重新选择对应序号：");
+            }
         }
-        
-        int pcChoice = (int)Math.random()* 3 + 1;
-        System.out.println("电脑出的"+pcChoice);
-        switch(userChoice-pcChoice) {
-        case -1:
-        case 2:
-            System.out.println("你赢了！");
-            break;
-        case 1:
-        case -2:
-            System.out.println("你输了！");
-            break;
-        default:
-            System.out.println("平局！");
-            break;
+        return userChoice;
+    }
+
+    private static int getComputerChoice() {
+        String[] arr = {"石头", "剪刀", "布"};
+        int computerChoice = ((int) Math.random() * 3) + 1;
+        System.out.println("电脑选择的序号为：" + computerChoice + " " + arr[computerChoice - 1]);
+        return computerChoice;
+    }
+
+    private static void judgeChoice(int userChoice, int computerChoice) {
+        switch (userChoice - computerChoice) {
+            case -1:
+            case 2:
+                System.out.println("你赢了!");
+                break;
+            case 0:
+                System.out.println("平局！");
+                break;
+            default:
+                System.out.println("你输了！");
+                break;
+
+            /*JDK 14才支持*/
+//          case -1, 2 -> System.out.println("你赢了!");
+//          case 0 -> System.out.println("平局！");
+//          default -> System.out.println("你输了！");
         }
     }
 }
 
+
 3.完成下列程序：
+
 public class JoinChar {
 
     public static void main(String[] args) {
@@ -156,8 +224,11 @@ public class JoinChar {
         int b = 105;
         int c = 65281;
         // ToDo..
-        String s = "" +(char)a + (char)b  + (char)c;
-        System.out.println(s);
+        String str = "" +(char)a + (char)b  + (char)c;
+        
+        // StringBuffer str = new StringBuffer();
+        // str.append((char)a).append((char)b).append((char)c);
+        System.out.println(str);
     }
 
 }
@@ -177,7 +248,7 @@ public class Main {
         // 比如：李刚默认18岁
         Person gang = new Person("李刚");
         Person ming = new Person("小明", 12);
-        
+
         System.out.println(hong.getName());
         System.out.println(lei.getName());
         System.out.println(gang.getAge());
@@ -192,34 +263,34 @@ class Person {
     private int age;
 
     // ToDo...
-    public String getName() {
+    protected String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    protected void setName(String name) {
         this.name = name;
     }
-    
-    public void setName(String fistName, String lastName) {
+
+    protected void setName(String fistName, String lastName) {
         this.name = fistName + lastName;
     }
 
-    public int getAge() {
+    protected void setAge(int age) {
+        this.age = age;
+    }
+
+    protected int getAge() {
         return age;
     }
 
-    public void setAge(int age) {
-        this.age = age;
+    protected Person() {
     }
-  
-    public Person() {
-    }
-    
-    public Person(String name) {
+
+    protected Person(String name) {
         this(name, 18); // 调用另一个构造方法Person(String, int)
     }
 
-    public Person(String name, int age) {
+    protected Person(String name, int age) {
         this.name = name;
         this.age = age;
     }
@@ -230,7 +301,7 @@ class Person {
 
 public class Main {
 
-    public static void main(String[] args) { 
+    public static void main(String[] args) {
         Person p1 = new Person("小明");
         System.out.println(Person.getCount()); // 1
         Person p2 = new Person("小红");
@@ -242,31 +313,31 @@ public class Main {
 }
 
 class Person {
-    public String name;
+    protected String name;
     // ToDo...
-    public static int count;
-    public static int getCount() {
-        count++;
+    protected static int count;
+    protected static int getCount() {
         return count;
     }
     public Person(String name) {
         this.name = name;
+        count++;
     }
 }
 
 
 6.完成下列程序：
+
+
 public class Main {
 
     public static void main(String[] args) {
         // TODO: 用接口给一个有工资收入和稿费收入的小伙伴算税:
-        Income[] incomes = new Income[] { new SalaryIncome(7500), new RoyaltyIncome(12000) };
+        Income[] incomes = new Income[]{new SalaryIncome(7500), new RoyaltyIncome(12000)};
         double total = 0;
         // TODO:
-        for(Income income: incomes) {
-            System.out.println(income.getTax());
+        for (Income income : incomes) {
             total = total + income.getTax();
-            System.out.println(total);
         }
         System.out.println(total);
     }
@@ -276,7 +347,7 @@ public class Main {
 /**
  * 定义接口Income
  */
-public interface Income {
+interface Income {
 
     // TODO
     double getTax();
@@ -287,18 +358,18 @@ public interface Income {
 /**
  * 工资减去基数3000,大于3000元收20%的税
  */
-public class SalaryIncome implements Income {
+class SalaryIncome implements Income {
 
-    // TODO 
+    // TODO
     protected double income;
-    
-    public SalaryIncome(double income){
+
+    public SalaryIncome(double income) {
         this.income = income;
     }
-    
+
     @Override
     public double getTax() {
-        return this.income>3000?(this.income-3000)*0.2:0;
+        return income > 3000 ? (income - 3000) * 0.2 : 0;
     }
 
 }
@@ -307,19 +378,19 @@ public class SalaryIncome implements Income {
  * 稿费收入税率是20%
  */
 
-public class RoyaltyIncome implements Income {
+class RoyaltyIncome implements Income {
 
     // TODO
     protected double income;
+
     public RoyaltyIncome(double income) {
         this.income = income;
     }
+
     @Override
     public double getTax() {
-        return this.income * 0.2;
+        return income * 0.2;
     }
 }
-
-
 
 
