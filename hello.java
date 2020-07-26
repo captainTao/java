@@ -266,6 +266,131 @@ String.replace()
 String.replaceAll() // 支持正则
 
 
+
+
+String类
+--------
+/*
+Java字符串String是不可变对象；
+字符串操作不改变原字符串内容，而是返回新字符串；
+常用的字符串操作：提取子串、查找、替换、大小写转换等；
+*/
+
+
+// 比较
+// 1.比较两个字符串用equals(),不用==：
+// 2.equalsIgnoreCase()可以忽略大小写
+public class Main {
+    public static void main(String[] args) {
+        String s1 = "hello";
+        String s2 = "HELLO".toLowerCase();
+        System.out.println(s1 == s2);
+        System.out.println(s1.equals(s2));
+    }
+}
+
+// 是否包含子串和切割:
+"Hello".contains("ll"); // true
+"Hello".indexOf("l"); // 2
+"Hello".lastIndexOf("l"); // 3
+"Hello".startsWith("He"); // true
+"Hello".endsWith("lo"); // true
+"Hello".substring(2); // "llo"
+"Hello".substring(2, 4); "ll"
+
+// 去除空格
+trim()方法可以移除字符串首尾空白字符。空白字符包括空格，\t，\r，\n
+"  \tHello\r\n ".trim(); // "Hello"
+trim()并没有改变字符串的内容，而是返回了一个新字符串。
+
+strip()方法也可以移除字符串首尾空白字符。它和trim()不同的是，类似中文的空格字符\u3000也会被移除：
+"\u3000Hello\u3000".strip(); // "Hello"
+" Hello ".stripLeading(); // "Hello "
+" Hello ".stripTrailing(); // " Hello"
+String还提供了isEmpty()和isBlank()来判断字符串是否为空和空白字符串：
+
+"".isEmpty(); // true，因为字符串长度为0
+"  ".isEmpty(); // false，因为字符串长度不为0
+"  \n".isBlank(); // true，因为只包含空白字符
+" Hello ".isBlank(); // false，因为包含非空白字符
+
+
+// 替换
+String s = "hello";
+s.replace('l', 'w'); // "hewwo"，所有字符'l'被替换为'w'
+s.replace("ll", "~~"); // "he~~o"，所有子串"ll"被替换为"~~"
+// 正则替换
+String s = "A,,B;C ,D";
+s.replaceAll("[\\,\\;\\s]+", ","); // "A,B,C,D", 不改变s的值
+
+// 分割
+String s = "A,B,C,D";
+String[] ss = s.split("\\,"); // {"A", "B", "C", "D"}
+
+// 拼接
+String[] arr = {"A", "B", "C"};
+String s = String.join("***", arr); // "A***B***C"
+
+// list转为String
+String.join("", list);// 方法一通过join
+list.stream().collect(Collectors.joining("")); // 方法二通过stream()
+
+
+// 格式化字符串
+public class Main {
+    public static void main(String[] args) {
+        String s = "Hi %s, your score is %d!";
+        System.out.println(s.formatted("Alice", 80));
+        System.out.println(String.format("Hi %s, your score is %.2f!", "Bob", 59.5));
+    }
+}
+
+// 类型转换
+String.valueOf(123); // "123"
+String.valueOf(45.67); // "45.67"
+String.valueOf(true); // "true"
+String.valueOf(new Object()); // 类似java.lang.Object@636be97c
+
+int n1 = Integer.parseInt("123"); // 123
+int n2 = Integer.parseInt("ff", 16); // 按十六进制转换，255
+
+boolean b1 = Boolean.parseBoolean("true"); // true
+boolean b2 = Boolean.parseBoolean("FALSE"); // false
+
+// Integer有个getInteger(String)方法，它不是将字符串转换为int，而是把该字符串对应的系统变量转换为Integer：
+Integer.getInteger("java.version"); // 版本号，11
+
+// 字符串转为浮点函数
+//方法一
+double score = Double.valueOf(sscore).doubleValue();
+double score = Double.parseDouble(sscore);
+
+//方法二
+int a = Integer.valueOf(s).intValue();
+nteger.parseInt(String s);
+
+
+
+// char和string互转
+char[] cs = "Hello".toCharArray(); // String -> char[]
+String s = new String(cs); // char[] -> String
+
+// 如果修改了char[]数组，String并不会改变：
+// 通过new String(char[])创建新的String实例时，它并不会直接引用传入的char[]数组，而是会复制一份
+public class Main {
+    public static void main(String[] args) {
+        char[] cs = "Hello".toCharArray();
+        String s = new String(cs);
+        System.out.println(s); // Hello
+        cs[0] = 'X';
+        System.out.println(s); // Hello
+        System.out.println(cs); // Xello
+    }
+}
+
+
+
+
 数组：
 _______
 int[] ns = new int[5];
@@ -1163,123 +1288,6 @@ java.base模块不依赖任何模块，它可以被看作是“根模块”,任�
 // java核心类
 ///////////////////////////////////////////////
 
-String
---------
-/*
-Java字符串String是不可变对象；
-字符串操作不改变原字符串内容，而是返回新字符串；
-常用的字符串操作：提取子串、查找、替换、大小写转换等；
-*/
-
-
-// 比较
-// 1.比较两个字符串用equals(),不用==：
-// 2.equalsIgnoreCase()可以忽略大小写
-public class Main {
-    public static void main(String[] args) {
-        String s1 = "hello";
-        String s2 = "HELLO".toLowerCase();
-        System.out.println(s1 == s2);
-        System.out.println(s1.equals(s2));
-    }
-}
-
-// 是否包含子串和切割:
-"Hello".contains("ll"); // true
-"Hello".indexOf("l"); // 2
-"Hello".lastIndexOf("l"); // 3
-"Hello".startsWith("He"); // true
-"Hello".endsWith("lo"); // true
-"Hello".substring(2); // "llo"
-"Hello".substring(2, 4); "ll"
-
-// 去除空格
-trim()方法可以移除字符串首尾空白字符。空白字符包括空格，\t，\r，\n
-"  \tHello\r\n ".trim(); // "Hello"
-trim()并没有改变字符串的内容，而是返回了一个新字符串。
-
-strip()方法也可以移除字符串首尾空白字符。它和trim()不同的是，类似中文的空格字符\u3000也会被移除：
-"\u3000Hello\u3000".strip(); // "Hello"
-" Hello ".stripLeading(); // "Hello "
-" Hello ".stripTrailing(); // " Hello"
-String还提供了isEmpty()和isBlank()来判断字符串是否为空和空白字符串：
-
-"".isEmpty(); // true，因为字符串长度为0
-"  ".isEmpty(); // false，因为字符串长度不为0
-"  \n".isBlank(); // true，因为只包含空白字符
-" Hello ".isBlank(); // false，因为包含非空白字符
-
-
-// 替换
-String s = "hello";
-s.replace('l', 'w'); // "hewwo"，所有字符'l'被替换为'w'
-s.replace("ll", "~~"); // "he~~o"，所有子串"ll"被替换为"~~"
-// 正则替换
-String s = "A,,B;C ,D";
-s.replaceAll("[\\,\\;\\s]+", ","); // "A,B,C,D", 不改变s的值
-
-// 分割
-String s = "A,B,C,D";
-String[] ss = s.split("\\,"); // {"A", "B", "C", "D"}
-
-// 拼接
-String[] arr = {"A", "B", "C"};
-String s = String.join("***", arr); // "A***B***C"
-
-// 格式化字符串
-public class Main {
-    public static void main(String[] args) {
-        String s = "Hi %s, your score is %d!";
-        System.out.println(s.formatted("Alice", 80));
-        System.out.println(String.format("Hi %s, your score is %.2f!", "Bob", 59.5));
-    }
-}
-
-// 类型转换
-String.valueOf(123); // "123"
-String.valueOf(45.67); // "45.67"
-String.valueOf(true); // "true"
-String.valueOf(new Object()); // 类似java.lang.Object@636be97c
-
-int n1 = Integer.parseInt("123"); // 123
-int n2 = Integer.parseInt("ff", 16); // 按十六进制转换，255
-
-boolean b1 = Boolean.parseBoolean("true"); // true
-boolean b2 = Boolean.parseBoolean("FALSE"); // false
-
-// Integer有个getInteger(String)方法，它不是将字符串转换为int，而是把该字符串对应的系统变量转换为Integer：
-Integer.getInteger("java.version"); // 版本号，11
-
-// 字符串转为浮点函数
-//方法一
-double score = Double.valueOf(sscore).doubleValue();
-double score = Double.parseDouble(sscore);
-
-//方法二
-int a = Integer.valueOf(s).intValue();
-nteger.parseInt(String s);
-
-
-
-// char和string互转
-char[] cs = "Hello".toCharArray(); // String -> char[]
-String s = new String(cs); // char[] -> String
-
-// 如果修改了char[]数组，String并不会改变：
-// 通过new String(char[])创建新的String实例时，它并不会直接引用传入的char[]数组，而是会复制一份
-public class Main {
-    public static void main(String[] args) {
-        char[] cs = "Hello".toCharArray();
-        String s = new String(cs);
-        System.out.println(s); // Hello
-        cs[0] = 'X';
-        System.out.println(s); // Hello
-        System.out.println(cs); // Xello
-    }
-}
-
-
-
 
 字符编码：
 ---------
@@ -1530,6 +1538,12 @@ List：一种有序列表的集合，例如，按索引排列的Student的List�
 Set：一种保证没有重复元素的集合，例如，所有无重复名称的Student的Set；
 Map：一种通过键值（key-value）查找的映射表集合，例如，根据Student的name查找对应Student的Map。
 
+
+集合实现类
+主要分为3种类型:
+List: 有序列表的集合，有ArrayList, LinkedList
+Set: 没有重复数据的集合，无序：HashSet, EnumSet, LinkedHashSet 有序：TreeSet
+Map: key-value的集合，有：EnumMap, HashMap, LinkedHashMap, TreeMap
 
 
 java集合使用统一的Iterator遍历，尽量不要使用遗留接口。不应该继续使用：
@@ -1803,7 +1817,6 @@ public class Main {
 
 
 
-
 // 判断对象列表中是否包含contains，需要对equals进行重写：
 // 如果list.contains()不包含，则返回-1
 /*
@@ -1813,16 +1826,62 @@ equals的正确写法：
 3.对引用类型用Objects.equals()比较，对基本类型直接用==比较。
 */
 
+Map:
+HashMap,LinkedHashMap,EnumMap,TreeMap(实现了接口sortedMap)
 
 /*
+ *  HashMap
+
+ * .put(key, value)    // null
+ * .remove(key)        // value
+ * .get(key)           // value
+ * .containsKey(key)   // bool
+ * .containsValue(vaule)  // bool
+*/
+
+
+import java.util.Map;
+import java.util.HashMap;
+
+public class Main {
+    public static void main(String[] args) {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("apple", 123);
+        map.put("pear", 456);
+        map.put("banana", 352);
+        System.out.println(map.get("apple")); // 123
+        map.put("apple", 789); // 再次放入apple作为key，但value变为789
+        System.out.println(map.get("apple")); // 789
+        System.out.println(map.remove("apple")); // 789
+
+        // 遍历foreach
+        for (String key: map.keySet()){
+            System.out.println(key +" = "+ map.get(key));
+        }
+        // 遍历entrySet
+        for (Map.Entry<String, Integer> entry : map.entrySet()){
+            System.out.println(entry.getKey() + " = " + entry.getValue());
+        }
+    }
+}
+
+
+/*
+要正确使用HashMap，作为key的类必须正确覆写equals()和hashCode()方法；
 一个类如果覆写了equals()，就必须覆写hashCode()，并且覆写规则是：
 
 如果equals()返回true，则hashCode()返回值必须相等；
-
 如果equals()返回false，则hashCode()返回值尽量不要相等。
-
 实现hashCode()方法可以通过Objects.hashCode()辅助方法实现。
 
+*/
+
+/*
+编写equals()和hashCode()遵循的原则是：
+
+equals()用到的用于比较的每一个字段，都必须在hashCode()中用于计算；
+equals()中没有使用到的字段，绝不可放在hashCode()中计算。
+另外注意，对于放入HashMap的value对象，没有任何要求。
 */
 import java.util.List;
 import java.util.Objects;
@@ -1855,45 +1914,761 @@ class Person {
     public boolean equals(Object o) {
         if (o instanceof Person) {
             Person p = (Person) o;
+            // 为了避免this.firstName, this.lastName 为null的请况，而使用静态方法Objects.quals()
             return Objects.equals(this.firstName, p.firstName) && Objects.equals(this.lastName, p.lastName) && this.age == p.age;
         }
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        // 反复使用31*h，这样做的目的是为了尽量把不同的Person实例的hashCode()均匀分布到整个int范围。
+        // int h = 0;
+        // h = 31 * h + firstName.hashCode();
+        // h = 31 * h + lastName.hashCode();
+        // h = 31 * h + age;
+        // return h;
+        // 和实现equals()方法遇到的问题类似，如果firstName或lastName为null，上述代码工作起来就会抛NullPointerException。为了解决这个问题，我们在计算hashCode()的时候，经常借助Objects.hash()
+        return Objects.hash(firstName, lastName, age);
+        // Objects.hashCode(Object o)方法只接受一个Object参数
+        // Objects.hash(Object... values)接受一个可变参数，但是内部调用的是Arrays.hashCode()
+    }
 }
 
 
-/*
- *  HashMap
 
- * .put(key, value) 
- * .remove(key)        // value
- * .get(key)           // value
- * .containsKey(key)   // bool
- * .containsValue(vaule)  // bool
-*/
 
+EnumMap:
+----------
+// 如果Map的key是enum类型，推荐使用EnumMap，既保证速度，也不浪费空间。
+// 使用EnumMap的时候，根据面向抽象编程的原则，应持有Map接口。
+
+Map<DayOfWeek, String> map = new EnumMap<>(DayOfWeek.class);// 定义，DayOfWeek是一个枚举类型
+
+
+
+TreeMap:
+----------
+// SortedMap在遍历时严格按照Key的顺序遍历，最常用的实现类是TreeMap；
+// 作为SortedMap的Key必须实现Comparable接口，或者传入Comparator；
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.TreeMap;
+public class Main {
+    public static void main(String[] args) {
+        Map<String, Integer> map = new TreeMap<>();
+        map.put("orange", 1);
+        map.put("apple", 2);
+        map.put("pear", 3);
+        for (String key : map.keySet()) {
+            System.out.println(key);
+        }
+        // apple, orange, pear
+    }
+}
+// 使用TreeMap时，放入的Key必须实现Comparable接口。String、Integer这些类已经实现了Comparable接口，因此可以直接作为Key使用。作为Value的对象则没有任何要求。
+// 如果作为Key的class没有实现Comparable接口，那么，必须在创建TreeMap时同时指定一个自定义排序算法：
+// Comparator接口要求实现一个比较方法，它负责比较传入的两个元素a和b，如果a<b，则返回负数，通常是-1，如果a==b，则返回0，如果a>b，则返回正数，通常是1。TreeMap内部根据比较结果对Key进行排序。
+// a>b?1:-1
+
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Comparator;
 
 public class Main {
     public static void main(String[] args) {
-        Map<String, Integer> map = new HashMap<>();
-        map.put("apple", 123);
-        map.put("pear", 456);
-        map.put("banana", 352);
-        System.out.println(map.get("apple")); // 123
-        map.put("apple", 789); // 再次放入apple作为key，但value变为789
-        System.out.println(map.get("apple")); // 789
-        System.out.println(map.remove("apple")); // 789
-
-        // 遍历foreach
-        for (String key: map.keySet()){
-            System.out.println(key +" = "+ map.get(key));
+        Map<Person, Integer> map = new TreeMap<>(new Comparator<Person>() {
+            public int compare(Person p1, Person p2) {
+                return p1.name.compareTo(p2.name);
+            }
+        });
+        map.put(new Person("Tom"), 1);
+        map.put(new Person("Bob"), 2);
+        map.put(new Person("Lily"), 3);
+        for (Person key : map.keySet()) {
+            System.out.println(key);
         }
-        // 遍历entrySet
-        for (Map.Entry<String, Integer> entry : map.entrySet()){
-            System.out.println(entry.getKey() + " = " + entry.getValue());
+        // {Person: Bob}, {Person: Lily}, {Person: Tom}
+        System.out.println(map.get(new Person("Bob"))); // 2
+    }
+}
+
+class Person {
+    public String name;
+    Person(String name) {
+        this.name = name;
+    }
+    public String toString() { // println会调用toString
+        return "{Person: " + name + "}";
+    }
+}
+
+
+// TreeMap在比较两个Key是否相等时，依赖Key的compareTo()方法或者Comparator.compare()方法。在两个Key相等时，必须返回0。
+
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Comparator;
+
+public class Main {
+    public static void main(String[] args) {
+        Map<Student, Integer> map = new TreeMap<>(new Comparator<Student>() {
+            public int compare(Student p1, Student p2) {
+                // 降序排列：
+                // if (p1.score == p2.score) {
+                //     return 0;
+                // }
+                // return p1.score > p2.score ? -1 : 1;
+                return p2.score - p1.score;
+            }
+//            public int compare(Student p1, Student p2) {
+//                return -Integer.compare(p1.score, p2.score);
+//            }
+        });
+        map.put(new Student("Tom", 77), 1);
+        map.put(new Student("Bob", 66), 2);
+        map.put(new Student("Lily", 99), 3);
+        for (Student key : map.keySet()) {
+            System.out.println(key);
+        }
+        System.out.println(map.get(new Student("Bob", 66))); // null?
+    }
+}
+
+class Student {
+    public String name;
+    public int score;
+    Student(String name, int score) {
+        this.name = name;
+        this.score = score;
+    }
+    public String toString() {
+        return String.format("{%s: score=%d}", name, score);
+    }
+}
+
+
+
+// 通过Comparable接口去实现：
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Comparator;
+
+public class Main {
+    public static void main(String[] args) {
+        Map<Student, Integer> map = new TreeMap<>();
+
+        map.put(new Student("Tom", 77), 1);
+        map.put(new Student("Bob", 66), 2);
+        map.put(new Student("Lily", 99), 3);
+        for (Student key : map.keySet()) {
+            System.out.println(key);
+        }
+        System.out.println(map.get(new Student("Bob", 66))); // null?
+    }
+}
+
+// 实现Comparable接口
+class Student implements Comparable<Student> {
+    public String name;
+    public int score;
+    Student(String name, int score) {
+        this.name = name;
+        this.score = score;
+    }
+
+    @Override
+    public int compareTo(Student o) {
+        Student p = (Student) o;
+        if (this.score == p.score) {
+            return 0;
+        }
+        return this.score < p.score ? -1 : 1;
+    }
+
+    public String toString() {
+        return String.format("{%s: score=%d}", name, score);
+    }
+}
+
+
+
+Properties
+----------
+/*
+ * 继承自Hashtable,
+ * 但基本不用.get(), .set()方法，些方法的参数签名是Object。
+ * 我们调用：
+ * .setProperty(key, value)
+ * .getProperty(key, defaultValue)
+*/
+
+
+/*
+用Properties读取配置文件，一共有三步：
+
+创建Properties实例；
+调用load()读取文件；
+调用getProperty()获取配置。
+*/
+
+// Java默认配置文件以.properties为扩展名，每行以key=value表示，以#课开头的是注释。以下是一个典型的配置文件：
+
+# setting.properties
+
+last_open_file=/data/hello.txt
+auto_save_interval=60
+
+
+// 从文件系统读取这个.properties文件：
+
+String f = "setting.properties";
+Properties props = new Properties();
+props.load(new java.io.FileInputStream(f));
+
+String interval = props.getProperty("auto_save_interval", "120");
+
+
+// 也可以从classpath读取.properties文件，因为load(InputStream)方法接收一个InputStream实例，表示一个字节流，它不一定是文件流，也可以是从jar包中读取的资源流：
+
+Properties props = new Properties();
+props.load(getClass().getResourceAsStream("/common/setting.properties"));
+// 如果有多个.properties文件，可以反复调用load()读取，后读取的key-value会覆盖已读取的key-value：
+props.load(new FileInputStream("C:\\conf\\setting.properties"));
+
+
+
+// 从内存读取一个字节流
+import java.io.*;
+import java.util.Properties;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        String settings = "# test" + "\n" + "course=Java" + "\n" + "last_open_date=2020-07-24T12:35:01";
+        ByteArrayInputStream input = new ByteArrayInputStream(settings.getBytes("UTF-8"));
+        Properties props = new Properties();
+        // load(InputStream)方法接收一个InputStream实例，表示一个字节流，它不一定是文件流，也可以是从jar包中读取的资源流：
+        props.load(input);
+
+        System.out.println("course: " + props.getProperty("course"));
+        System.out.println("last_open_date: " + props.getProperty("last_open_date"));
+        System.out.println("last_open_file: " + props.getProperty("last_open_file"));
+        System.out.println("auto_save: " + props.getProperty("auto_save", "60"));
+    }
+}
+
+
+// 写入配置文件，写入配置文件使用store()方法：
+Properties props = new Properties();
+props.setProperty("url", "http://www.liaoxuefeng.com");
+props.setProperty("language", "Java");
+props.store(new FileOutputStream("C:\\conf\\setting.properties"), "这是写入的properties注释");
+
+
+编码：
+----------
+// 早期版本的Java规定.properties文件编码是ASCII编码（ISO8859-1），如果涉及到中文就必须用name=\u4e2d\u6587来表示，非常别扭。从JDK9开始，Java的.properties文件可以使用UTF-8编码了。不过，需要注意的是，由于load(InputStream)默认总是以ASCII编码读取字节流，所以会导致读到乱码。我们需要用另一个重载方法load(Reader)读取：
+
+Properties props = new Properties();
+props.load(new FileReader("settings.properties", StandardCharsets.UTF_8));
+
+// InputStream和Reader的区别是一个是字节流，一个是字符流。
+// 字符流在内存中已经以char类型表示了，不涉及编码问题。
+
+
+
+Set:
+------------
+// 无序：HashSet, EnumSet, LinkedHashSet 有序：TreeSet
+
+// 放入Set的元素和Map的key类似，都要正确实现equals()和hashCode()方法
+
+boolean add(E e)              将元素添加进Set<E>：
+boolean remove(Object e)      将元素从Set<E>删除：
+boolean contains(Object e)    判断是否包含元素：
+.size()                       set长度
+
+
+import java.util.Set;
+import java.util.HashSet;
+import java.util.TreeSet;
+
+public class Main {
+    public static void main(String[] args) {
+//        Set<String> set = new HashSet<>();
+        Set<String> set = new TreeSet<>();
+//        set.add(null); // TreeSet不能传入null
+        set.add("cell");
+        set.add(String.valueOf(3));
+        for (String item:
+             set) {
+            System.out.println(item);
         }
     }
 }
+
+/*
+使用TreeSet和使用TreeMap的要求一样，添加的元素必须正确实现Comparable接口，如果没有实现Comparable接口，那么创建TreeSet时必须传入一个Comparator对象。
+*/
+
+// 对传入的消息进行去重：
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        List<Message> received = List.of(
+                new Message(1, "Hello!"),
+                new Message(2, "发工资了吗？"),
+                new Message(2, "发工资了吗？"),
+                new Message(3, "去哪吃饭？"),
+                new Message(3, "去哪吃饭？"),
+                new Message(4, "Bye")
+        );
+        List<Message> displayMessages = process(received);
+        for (Message message : displayMessages) {
+            System.out.println(message.text);
+        }
+    }
+
+    static List<Message> process(List<Message> received) {
+        // TODO: 按sequence去除重复消息
+//        Set<Message> setMessage = new TreeSet<>();
+// //        setMessage.addAll(received);
+//        for (Message m : received) {
+//            setMessage.add(m);
+//        }
+        Set<Message> setMessage = new TreeSet<>(received);
+        return List.copyOf(setMessage);
+    }
+}
+
+class Message implements Comparable <Message> {
+    public final int sequence;
+    public final String text;
+    public Message(int sequence, String text) {
+        this.sequence = sequence;
+        this.text = text;
+    }
+    @Override
+    public int compareTo(Message o) {
+        return this.sequence - o.sequence;
+    }
+}
+
+
+
+// Queue
+------------
+/*
+是一个先进先出队列(FIFO)，可以理解为超市排队
+
+只有两个操作：
+把元素添加到队列末尾；
+从队列头部取出元素。
+
+int size()：获取队列长度；
+boolean add(E)/boolean offer(E)：添加元素到队尾；
+E remove()/E poll()：获取队首元素并从队列中删除；
+E element()/E peek()：获取队首元素但并不从队列中删除。
+
+避免把null添加到队列,因为poll取不到元素的时候，会返回null
+
+*/
+
+
+// add()
+Queue<String> q = ...
+try {
+    q.add("Apple");
+    System.out.println("添加成功");
+} catch(IllegalStateException e) {
+    System.out.println("添加失败");
+}
+
+
+// offer()
+Queue<String> q = ...
+if (q.offer("Apple")) {
+    System.out.println("添加成功");
+} else {
+    System.out.println("添加失败");
+}
+
+
+// remove()
+Queue<String> q = ...
+try {
+    String s = q.remove();
+    System.out.println("获取成功");
+} catch(IllegalStateException e) {
+    System.out.println("获取失败");
+}
+
+
+// poll()
+Queue<String> q = ...
+String s = q.poll();
+if (s != null) {
+    System.out.println("获取成功");
+} else {
+    System.out.println("获取失败");
+}
+
+
+
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Main {
+    public static void main(String[] args) {
+        // LinkedList既可以当做list,也可以用作Queue,即实现了List接口，又实现了Queue接口
+        Queue<String> q = new LinkedList<>();
+        // List<String> l = new LinkedList<>();
+        // 添加3个元素到队列:
+        q.offer("apple");
+        q.offer("pear");
+        q.offer("banana");
+        // 从队列取出元素:
+        System.out.println(q.poll()); // apple
+        System.out.println(q.poll()); // pear
+        System.out.println(q.peek()); // banana, peek()不会删除元素
+        System.out.println(q.poll()); // banana
+        System.out.println(q.poll()); // null,因为队列是空的
+    }
+}
+
+
+
+
+// PriorityQueue
+------------------
+/*
+
+PriorityQueue 调用remove()或poll()方法，返回的总是优先级最高的元素。
+放入PriorityQueue的元素，必须实现Comparable接口
+
+*/
+
+
+
+/*
+银行vip客户优先级大于普通客户
+*/
+import java.util.Queue;
+import java.util.PriorityQueue;
+import java.util.Comparator;
+
+public class Main {
+    public static void main(String[] args) {
+        Queue<User> q = new PriorityQueue<>(new UserComparator());
+        // 添加3个元素到队列:
+        q.offer(new User("Bob", "A10"));
+        q.offer(new User("Alice", "A2"));
+        q.offer(new User("Boss", "V1"));
+        System.out.println(q.poll()); // Boss/V1
+        System.out.println(q.poll()); // Alice/A2
+        System.out.println(q.poll()); // Bob/A10
+        System.out.println(q.poll()); // null,因为队列为空
+    }
+}
+
+// 单独实现Comparator
+class UserComparator implements Comparator<User> {
+    public int compare(User u1, User u2) {
+        if (u1.number.charAt(0) == u2.number.charAt(0)) {
+            // 如果两人的号都是A开头或者都是V开头,比较号的大小:
+            // return (u1.number.substring(1)).compareTo(u2.number.substring(1));
+            return Integer.parseInt(u1.number.substring(1)) - Integer.parseInt(u2.number.substring(1));
+        }
+        if (u1.number.charAt(0) == 'V') {
+            // u1的号码是V开头,优先级高:
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+}
+
+class User {
+    public final String name;
+    public final String number;
+
+    public User(String name, String number) {
+        this.name = name;
+        this.number = number;
+    }
+
+    public String toString() {
+        return name + "/" + number;
+    }
+}
+
+
+
+// Deque:
+----------
+/*
+Deque接口实际上扩展自Queue：
+
+public interface Deque<E> extends Queue<E> {
+    ...
+}
+实际中应尽量调用子类方法
+*/
+
+                           Queue                                Deque
+添加元素到队尾         add(E e) / offer(E e)            addLast(E e) / offerLast(E e)
+取队首元素并删除       E remove() / E poll()            E removeFirst() / E pollFirst()
+取队首元素但不删除     E element() / E peek()            E getFirst() / E peekFirst()
+添加元素到队首                 无                        addFirst(E e) / offerFirst(E e)
+取队尾元素并删除               无                         E removeLast() / E pollLast()
+取队尾元素但不删除              无                        E getLast() / E peekLast()
+
+
+
+import java.util.Deque;
+import java.util.LinkedList;
+
+public class Main {
+    public static void main(String[] args) {
+        // LinkedList真是一个全能选手，它即是List，又是Queue，还是Deque。
+        Deque<String> deque = new LinkedList<>();
+        deque.offerLast("A"); // A
+        deque.offerLast("B"); // B -> A
+        deque.offerFirst("C"); // B -> A -> C
+        System.out.println(deque.pollFirst()); // C, 剩下B -> A
+        System.out.println(deque.pollLast()); // B
+        System.out.println(deque.pollFirst()); // A
+        System.out.println(deque.pollFirst()); // null
+    }
+}
+
+
+
+// Stack:
+---------
+/*
+为什么Java的集合类没有单独的Stack接口呢？
+因为有个遗留类名字就叫Stack，出于兼容性考虑，所以没办法创建Stack接口，只能用Deque接口来“模拟”一个Stack了。
+
+LIFO:后进先出
+Stack只有入栈和出栈的操作：
+
+push(E)：把元素压栈
+pop(E)：把栈顶的元素“弹出”
+peek(E)：取栈顶元素但不弹出
+
+在Java中，我们用Deque可以实现Stack的功能：
+当我们把Deque作为Stack使用时，注意只调用push()/pop()/peek()方法，
+不要调用addFirst()/removeFirst()/peekFirst()方法，这样代码更加清晰。
+
+push(E)/addFirst(E): 把元素压栈：
+pop(E)/removeFirst(): 把栈顶的元素“弹出”：
+peek(E)/peekFirst(): 取栈顶元素但不弹出：
+*/
+
+
+// 把一个整数格式化成十六进制：
+import java.util.Deque;
+import java.util.LinkedList;
+
+public class Main {
+    public static void main(String[] args) {
+        String hex = toHex(12500);
+        if (hex.equalsIgnoreCase("30D4")) {
+            System.out.println("测试通过");
+        } else {
+            System.out.println("测试失败");
+        }
+    }
+
+    static String toHex(int n) {
+        Deque<String> stack = new LinkedList<String>();
+//        boolean modFlag = true;
+//        while (modFlag) {
+//            String s = String.valueOf(n % 16);
+//            n = n / 16;
+//            List<String> l1 = List.of("10", "11", "12", "13", "14", "15");
+//            List<String> l2 = List.of("A", "B", "C", "D", "E", "F");
+//            if (n == 0) {
+//                modFlag = false;
+//            }
+//
+//            for (int i = 0; i < l1.size(); i++) {
+//                if (s.equals(l1.get(i))) {
+//                    s = l2.get(i);
+//                }
+//            }
+//            stack.push(s);
+//        }
+        while (n != 0) {
+            String s = Integer.toHexString(n % 16);
+            stack.push(s);
+            n /= 16;
+        }
+        System.out.println("Stack = " + stack);
+        return String.join("", stack);
+    }
+}
+
+
+
+Collections
+------------
+
+// 创建空的集合：
+List<Integer> list = Collections.emptyList();
+Map<String, Integer> map = Collections.emptyMap();
+Set<String> set = Collections.emptySet();
+
+// 创建单集合，不可变，无法添加，删除；
+List<Integer> list = Collections.singletonList();
+Map<String, Integer> map = Collections.singletonMap();
+Set<String> set = Collections.singleton();
+
+// 排序：
+ Collections.sort(list); // 会改变list
+// 洗牌打乱：
+Collections.shuffle(list);
+
+
+// 封装成不可变List：List<T> unmodifiableList(List<? extends T> list)
+// 封装成不可变Set：Set<T> unmodifiableSet(Set<? extends T> set)
+// 封装成不可变Map：Map<K, V> unmodifiableMap(Map<? extends K, ? extends V> m)
+
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Main {
+    public static void main(String[] args) {
+        List<String> mutable = new ArrayList<>();
+        mutable.add("apple");
+        mutable.add("pear");
+        // 变为不可变集合:
+        List<String> immutable = Collections.unmodifiableList(mutable);
+        //immutable.add("orange"); // 不可变，会抛UnsupportedOperationException!
+        mutable.add("orange"); // 但是可以修改原始的list
+        System.out.println(immutable);
+        mutable = null;  // 一般创建新的不可变集合后，扔掉原始的集合；
+        System.out.println(immutable);
+    }
+}
+
+
+// 可以把线程不安全的集合变为线程安全的集合：
+// 变为线程安全的List：List<T> synchronizedList(List<T> list)
+// 变为线程安全的Set：Set<T> synchronizedSet(Set<T> s)
+// 变为线程安全的Map：Map<K,V> synchronizedMap(Map<K,V> m)
+
+
+
+
+
+IO
+--------
+/*
+InputStream、OutputStream、Reader和Writer都是同步IO的抽象类，
+对应的具体实现类，以文件为例，有FileInputStream、FileOutputStream、FileReader和FileWriter。
+
+IO流是一种流式的数据输入/输出模型：
+    二进制数据以byte为最小单位在InputStream/OutputStream中单向流动；
+    字符数据以char为最小单位在Reader/Writer中单向流动。
+
+Java标准库的java.io包提供了同步IO功能：
+    字节流接口：InputStream/OutputStream；
+    字符流接口：Reader/Writer。
+*/
+
+
+import java.io.*;
+public class Main {
+    public static void main(String[] args) throws IOException {
+        File f = new File("..");
+        System.out.println(f.getPath()); // 返回构造方法传入的路径
+        System.out.println(f.getAbsolutePath());   // 返回绝对路径
+        System.out.println(f.getCanonicalPath());  // 和绝对路径类似，但是返回的是规范路径。
+    }
+}
+
+
+System.out.println(File.separator); // 根据当前平台win还是linux打印"\"或"/"
+
+
+
+import java.io.*;
+public class Main {
+    public static void main(String[] args) throws IOException {
+        // File对象既可以表示文件，也可以表示目录, 即使传入的文件或目录不存在，代码也不会出错
+        File f1 = new File("C:\\Windows"); // 用\\表示\
+        System.out.println(f1.isFile());
+        System.out.println(f1.isDirectory());
+    }
+}
+
+// file对象还有以下操作
+boolean canRead()：是否可读；
+boolean canWrite()：是否可写；
+boolean canExecute()：是否可执行；
+long length()：文件字节大小。
+
+// 创建和删除文件：
+File file = new File("/path/to/file");
+if (file.createNewFile()) {
+    // 文件创建成功:
+    // TODO:
+    if (file.delete()) {
+        // 删除文件成功:
+    }
+}
+
+
+
+// File对象提供了createTempFile()来创建一个临时文件，以及deleteOnExit()在JVM退出时自动删除该文件。
+public class Main {
+    public static void main(String[] args) throws IOException {
+        File f = File.createTempFile("tmp-", ".txt"); // 提供临时文件的前缀和后缀
+        f.deleteOnExit(); // JVM退出时自动删除
+        System.out.println(f.isFile());
+        System.out.println(f.getAbsolutePath());
+    }
+}
+
+
+
+// list()和listFiles()列出目录下的文件和子目录名
+import java.io.*;
+public class Main {
+    public static void main(String[] args) throws IOException {
+        File f = new File("C:\\Windows");
+        File[] fs1 = f.listFiles(); // 列出所有文件和子目录
+        printFiles(fs1);
+        // 仅列出.exe文件
+        File[] fs2 = f.listFiles((dir, name) -> { 
+            return name.endsWith(".exe"); // 返回true表示接受该文件
+        });
+//        File[] fs2 = f.listFiles(new FilenameFilter() { // 仅列出.exe文件
+//            public boolean accept(File dir, String name) {
+//                return name.endsWith(".exe"); // 返回true表示接受该文件
+//            }
+//        });
+        printFiles(fs2);
+    }
+
+    static void printFiles(File[] files) {
+        System.out.println("==========");
+        if (files != null) {
+            for (File f : files) {
+                System.out.println(f);
+            }
+        }
+        System.out.println("==========");
+    }
+}
+
+
+// file表示目录时候，有如下方法：
+boolean mkdir()：创建当前File对象表示的目录；
+boolean mkdirs()：创建当前File对象表示的目录，并在必要时将不存在的父目录也创建出来；
+boolean delete()：删除当前File对象表示的目录，当前目录必须为空才能删除成功。
