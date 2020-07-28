@@ -2672,3 +2672,84 @@ public class Main {
 boolean mkdir()：创建当前File对象表示的目录；
 boolean mkdirs()：创建当前File对象表示的目录，并在必要时将不存在的父目录也创建出来；
 boolean delete()：删除当前File对象表示的目录，当前目录必须为空才能删除成功。
+
+
+
+// Java标准库还提供了一个Path对象，它位于java.nio.file包。Path对象和File对象类似，但操作更加简单
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        Path p1 = Paths.get(".", "project", "study"); // 构造一个Path对象
+        System.out.println(p1);
+        Path p2 = p1.toAbsolutePath(); // 转换为绝对路径
+        System.out.println(p2);
+        Path p3 = p2.normalize(); // 转换为规范路径
+        System.out.println(p3);
+        File f = p3.toFile(); // 转换为File对象
+        System.out.println(f);
+        for (Path p : Paths.get("..").toAbsolutePath()) { // 可以直接遍历Path
+            System.out.println("  " + p);
+        }
+    }
+}
+
+
+
+
+
+泛型的撰写
+--------
+/*
+编写泛型时，需要定义泛型类型<T>；
+静态方法不能引用泛型类型<T>，必须定义其他类型（例如<K>）来实现静态泛型方法；
+泛型可以同时定义多种类型，例如Map<K, V>。
+*/
+
+public class Pair<T> {
+    private T first;
+    private T last;
+    public Pair(T first, T last) {
+        this.first = first;
+        this.last = last;
+    }
+    public T getFirst() { ... }
+    public T getLast() { ... }
+
+    // 静态泛型方法应该使用其他类型区分:
+    public static <K> Pair<K> create(K first, K last) {
+        return new Pair<K>(first, last);
+    }
+}
+
+// 多个泛型
+public class Pair<T, K> {
+    private T first;
+    private K last;
+    public Pair(T first, K last) {
+        this.first = first;
+        this.last = last;
+    }
+    public T getFirst() { ... }
+    public K getLast() { ... }
+}
+
+
+
+/*
+
+Java的泛型是采用擦拭法实现的；
+
+擦拭法决定了泛型<T>：
+
+不能是基本类型，例如：int；
+不能获取带泛型类型的Class，例如：Pair<String>.class；
+不能判断带泛型类型的类型，例如：x instanceof Pair<String>；
+不能实例化T类型，例如：new T()。
+泛型方法要防止重复定义方法，例如：public boolean equals(T obj)；
+
+子类可以获取父类的泛型类型<T>。
+*/
