@@ -1,3 +1,9 @@
+/*
+??
+1. set如何取值？
+*/
+
+
 Java SE：Standard Edition
 Java EE：Enterprise Edition
 Java ME：Micro Edition
@@ -1411,6 +1417,10 @@ boolean <------> java.lang.Boolean  //加上java.lang.xx
 int     <------> java.lang.Integer  //加上java.lang.xx
 
 
+Number类是java.lang包下的一个抽象类，提供了将包装类型拆箱成基本类型的方法，
+所有基本类型（数据类型）的包装类型都继承了该抽象类，并且是final声明不可继承改变
+https://blog.csdn.net/yaomingyang/article/details/79297750
+
 1. 把int变为Integer的赋值写法，称为自动装箱(Auto Boxing)，反过来称为自动拆箱(Auto Unboxing).
 2. 自动拆箱执行时可能会报NullPointerException, 这是因为引用类型可以赋值为null，表示空，但基本类型不能赋值为null：
 public class Main {
@@ -1679,6 +1689,15 @@ public class Main {
 Collections.shuffle(list): 可以打乱一个list顺序
 
 
+
+Random类：
+----------
+
+public boolean nextBoolean() // true, false各50%概率
+public double nextDouble() // 数值介于[0,1.0)之间
+public int nextInt() // 该值介于int的区间，也就是-231到231-1之间
+public int nextInt(int n) // 该值介于[0,n)的区间
+public void setSeed(long seed)  // 跟new Random(long seed)一致
 
 // java8 Stream
 // -------------
@@ -2701,14 +2720,48 @@ public class Main {
 
 
 
-泛型的撰写
+泛型
 --------
 /*
+泛型就是编写模板代码来适应任意类型；
+
+泛型的好处是使用时不必对类型进行强制转换，它通过编译器对类型进行检查；
+
+注意泛型的继承关系：可以把ArrayList<Integer>向上转型为List<Integer>（T不能变！），
+但不能把ArrayList<Integer>向上转型为ArrayList<Number>（T不能变成父类）。
+
+
+编写泛型时，需要定义泛型类型<T>；
+静态方法不能引用泛型类型<T>，必须定义其他类型（例如<K>）来实现静态泛型方法；
+泛型可以同时定义多种类型，例如Map<K, V>。
+
+*/
+
+/*
+泛型的撰写:
+
 编写泛型时，需要定义泛型类型<T>；
 静态方法不能引用泛型类型<T>，必须定义其他类型（例如<K>）来实现静态泛型方法；
 泛型可以同时定义多种类型，例如Map<K, V>。
 */
 
+// 先写一个类型
+public class Pair {
+    private String first;
+    private String last;
+    public Pair(String first, String last) {
+        this.first = first;
+        this.last = last;
+    }
+    public String getFirst() {
+        return first;
+    }
+    public String getLast() {
+        return last;
+    }
+}
+
+// 然后把String替换为T，并在头部声明<T>
 public class Pair<T> {
     private T first;
     private T last;
@@ -2725,7 +2778,30 @@ public class Pair<T> {
     }
 }
 
+
+
+// 泛型类型<T>不能用于静态方法。必须定义其他类型（例如<K>）来实现静态泛型方法；
+
+// 对于静态方法，我们应该把它改为另一种泛型类型，例如，<K>：
+public class Pair<T> {
+    private T first;
+    private T last;
+    public Pair(T first, T last) {
+        this.first = first;
+        this.last = last;
+    }
+    public T getFirst() { ... }
+    public T getLast() { ... }
+
+    // 静态泛型方法应该使用其他类型区分:
+    public static <K> Pair<K> create(K first, K last) {
+        return new Pair<K>(first, last);
+    }
+}
+
+
 // 多个泛型
+--------------
 public class Pair<T, K> {
     private T first;
     private K last;
@@ -2739,17 +2815,140 @@ public class Pair<T, K> {
 
 
 
+
+// 擦拭法
+---------
 /*
 
 Java的泛型是采用擦拭法实现的；
 
 擦拭法决定了泛型<T>：
 
+泛型的缺陷：
 不能是基本类型，例如：int；
-不能获取带泛型类型的Class，例如：Pair<String>.class；
+不能获取带泛型类型的Class，例如：c2.getClass = Pair<String>.class；
 不能判断带泛型类型的类型，例如：x instanceof Pair<String>；
 不能实例化T类型，例如：new T()。
 泛型方法要防止重复定义方法，例如：public boolean equals(T obj)；
-
 子类可以获取父类的泛型类型<T>。
 */
+
+
+extends
+----------
+/*
+使用extends通配符表示可以读，不能写。
+使用类似<T extends Number>定义泛型类时表示：
+泛型类型限定为Number以及Number的子类。
+
+*/
+// 如果我们考察Java标准库的java.util.List<T>接口，它实现的是一个类似“可变数组”的列表，主要功能包括：
+public interface List<T> {
+    int size(); // 获取个数
+    T get(int index); // 根据索引获取指定元素
+    void add(T t); // 添加一个新元素
+    void remove(T t); // 删除一个已有元素
+}
+// 现在，让我们定义一个方法来处理列表的每个元素
+int sumOfList(List<? extends Integer> list) {
+    int sum = 0;
+    for (int i=0; i<list.size(); i++) {
+        Integer n = list.get(i);
+        sum = sum + n;
+    }
+    return sum;
+}
+
+
+// 注意到List<? extends Integer>的限制：
+
+// 允许调用get()方法获取Integer的引用；
+// 不允许调用set(? extends Integer)方法并传入任何Integer的引用（null除外）。
+
+
+// 在定义泛型类型Pair<T>的时候，也可以使用extends通配符来限定T的类型：
+
+public class Pair<T extends Number> { ... }
+
+
+
+super
+------
+// 使用<? super Integer>通配符作为方法参数，表示方法内部代码对于参数只能写，不能读。
+
+
+public class Main {
+    public static void main(String[] args) {
+        Pair<Number> p1 = new Pair<>(12.3, 4.56);
+        Pair<Integer> p2 = new Pair<>(123, 456);
+        setSame(p1, 100);
+        setSame(p2, 200);
+        System.out.println(p1.getFirst() + ", " + p1.getLast());
+        System.out.println(p2.getFirst() + ", " + p2.getLast());
+    }
+
+    static void setSame(Pair<? super Integer> p, Integer n) {
+        p.setFirst(n);
+        p.setLast(n);
+    }
+
+}
+
+class Pair<T> {
+    private T first;
+    private T last;
+
+    public Pair(T first, T last) {
+        this.first = first;
+        this.last = last;
+    }
+
+    public T getFirst() {
+        return first;
+    }
+
+    public T getLast() {
+        return last;
+    }
+
+    public void setFirst(T first) {
+        this.first = first;
+    }
+
+    public void setLast(T last) {
+        this.last = last;
+    }
+}
+
+// super和extend的区别:
+-------------------
+/*
+作为方法参数，<? extends T>类型和<? super T>类型的区别在于：
+
+<? extends T>允许调用读方法T get()获取T的引用，但不允许调用写方法set(T)传入T的引用（传入null除外）；
+<? super T>允许调用写方法set(T)传入T的引用，但不允许调用读方法T get()获取T的引用（获取Object除外）。
+
+一个是允许读不允许写，另一个是允许写不允许读。
+*/
+
+// Java标准库的Collections类定义的copy()方法：
+public class Collections {
+    // 把src的每个元素复制到dest中:
+    public static <T> void copy(List<? super T> dest, List<? extends T> src) {
+        for (int i=0; i<src.size(); i++) {
+            T t = src.get(i);
+            dest.add(t);
+        }
+    }
+}
+
+// 这个copy()方法的定义就完美地展示了extends和super的意图：
+// copy()方法内部不会读取dest，因为不能调用dest.get()来获取T的引用；
+// copy()方法内部也不会修改src，因为不能调用src.add(T)。
+
+
+无限定通配符?
+// 既不能读，也不能写，只能做一些null判断：
+void sample(Pair<?> p) {
+}
+Pair<?>是所有Pair<T>的超类：
