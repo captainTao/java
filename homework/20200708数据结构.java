@@ -48,6 +48,7 @@ public class Main {
 /*
  * BitSet
  * 
+ * 常见的应用场景是对海量数据进行一些统计工作，比如日志分析、用户数统计等。
  * BitSet()
  * BitSet(int size)
  * 
@@ -298,6 +299,7 @@ public class Main {
  * Properties
  * 
  * 继承自Hashtable
+ * .put(key, value)
  * .setProperty(key, value)
  * .getProperty(key, defaultValue)
  * */

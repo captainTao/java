@@ -1,9 +1,13 @@
 /*
 ??
 1. set如何取值？
+2. oc sign,token文件位置
+ATNetworkDao.m
+ATQNSinal.m
+3.单例和静态方法的优劣势？
 */
 
-
+/*
 Java SE：Standard Edition
 Java EE：Enterprise Edition
 Java ME：Micro Edition
@@ -17,6 +21,20 @@ JCP组织：Java Community Process
 RI：Reference Implementation
 TCK：Technology Compatibility Kit
 
+
+int.class.isPrimitive()  //判断是否是基本数据类型
+a instanceof Object  // 判断是否是类对象
+
+String s = String.valueOf(int.class);
+System.out.println(s.equals("int"));
+
+System.exit(0) //正常退出，一般用在if中
+System.exit(1) //非正常退出，一般放在Catch中
+
+
+hasNextLine() // 有输入就算
+hasNext() // 输入非空或空白字符
+*/
 
 /*
 eclipse查看jar源代码的方式：
@@ -149,6 +167,10 @@ byte：-128 ~ 127 // 2^8
 short,char: 2 byte //-32768 ~ 32767
 int,float,boolean: 4 byte //-2147483648 ~ 2147483647, 21个亿
 long,double: 8 byte // -9223372036854775808 ~ 9223372036854775807
+
+
+关于byte和int之间的联系的理解：
+https://www.cnblogs.com/think-in-java/p/5527389.html
 
 // boolean (true, false)
 
@@ -1140,6 +1162,48 @@ static class xx{..}
 
 
 
+单例模式：
+--------
+/*
+1.自己持有1个自己对象，且为静态持有
+2.实例化方法私有，不能被外部实例化
+3.外部只能通过类的静态方法获取到一个单例，即持有的对象
+4.然后单例调用自己的方法
+*/
+public class SingleObject {
+ 
+   //创建 SingleObject 的一个对象
+   private static SingleObject instance = new SingleObject();
+ 
+   //让构造函数为 private，这样该类就不会被实例化
+   private SingleObject(){}
+ 
+   //获取唯一可用的对象
+   public static SingleObject getInstance(){
+      return instance;
+   }
+ 
+   public void showMessage(){
+      System.out.println("Hello World!");
+   }
+}
+
+
+public class SingletonPatternDemo {
+   public static void main(String[] args) {
+ 
+      //不合法的构造函数
+      //编译时错误：构造函数 SingleObject() 是不可见的
+      //SingleObject object = new SingleObject();
+ 
+      //获取唯一可用的对象
+      SingleObject object = SingleObject.getInstance();
+ 
+      //显示消息
+      object.showMessage();// Hello World!
+   }
+}
+
 package
 --------
 // JDK的Arrays类存放在包java.util下面，因此，完整类名是java.util.Arrays
@@ -1539,6 +1603,160 @@ try{
 }
 
 
+lambda:
+---------
+
+
+
+// java8 Stream
+// -------------
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.IntSummaryStatistics;
+import java.util.stream.Collectors;
+import java.util.Random;
+
+/*
+* stream()
+* ----------
+* forEach
+* map
+* reduce
+* filter
+* limit
+* sorted
+* Collectors
+* distinct
+* collect
+* */
+public class Main {
+    public static void main(String[] args) {
+
+        /**
+        * .stream()
+         *
+         * .filter()
+         * .isEmpty()
+         * .collect(Collectors.toList())
+         * import java.util.Arrays;
+         * import java.util.List;
+         * import java.util.stream.Collectors;
+        * */
+        List<String> strings = Arrays.asList("abc", "", "bc", "efg", "abcd","", "jkl");
+        List<String> filtered = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.toList());
+        System.out.println(filtered);
+
+        /**
+         * .parallelStream()
+         *
+         * .filter()
+         * .isEmpty()
+         * import java.util.Arrays;
+         * import java.util.List;
+         * */
+        List<String> strings = Arrays.asList("abc", "", "bc", "efg", "abcd"," ", "jkl");
+        // 获取空字符串的数量
+        long count = strings.parallelStream().filter(string -> string.isEmpty()).count();
+        System.out.println(count);
+
+
+        /**
+        * .forEach()
+         * .limt()
+         *
+         *  import java.util.Random;
+        * */
+        Random random = new Random();
+        random.ints().limit(5).forEach(System.out::println); //用系统函数使用::
+
+        /**
+        * .map()
+         *
+         * .distinct()
+         * .collect()
+         * import java.util.Arrays;
+         * import java.util.List;
+         * import java.util.stream.Collectors;
+        * */
+        List<Integer> numbers = Arrays.asList(3, 2, 2, 3, 7, 3, 5);
+        // 获取对应的平方数
+        List<Integer> squaresList = numbers.stream().map( i -> i*i).collect(Collectors.toList());
+        System.out.println(squaresList);
+
+
+        /**
+        * reduce()
+         *
+         * orElse()
+        * */
+        List<Integer> list = Arrays.asList(2, 4, 6 ,7);
+        // int sum = list.stream().reduce(Integer::sum).orElse(0); // orElse()这儿相当于是个可选项
+        int sum = list.stream().reduce((i, j) -> (i*10 + j)).orElse(0);
+        System.out.println(sum);
+
+
+        /**
+        * filter()
+         *
+         * .isBlank()
+         * .count()
+         * import java.util.Arrays;
+         * import java.util.List;
+        * */
+        List<String>strings = Arrays.asList("abc", "", "bc", "efg", "abcd"," ", "jkl");
+        // 获取空字符串的数量
+        long count = strings.stream().filter(string -> string.isBlank()).count();
+        System.out.println(count);
+
+
+        /**
+         * 统计
+         *
+         * import java.util.Arrays;
+         * import java.util.List;
+         * import java.util.IntSummaryStatistics;
+         */
+        List<Integer> numbers = Arrays.asList(3, 2, 2, 3, 7, 3, 5);
+        IntSummaryStatistics stats = numbers.stream().mapToInt((x) -> x).summaryStatistics();
+
+        System.out.println("列表中最大的数 : " + stats.getMax());
+        System.out.println("列表中最小的数 : " + stats.getMin());
+        System.out.println("所有数之和 : " + stats.getSum());
+        System.out.println("平均数 : " + stats.getAverage());
+
+
+        /**
+         * Collectors
+         *
+         * import java.util.Arrays;
+         * import java.util.List;
+         * import java.util.stream.Collectors;
+         * */
+        List<String>strings = Arrays.asList("abc", "", "bc", "efg", "abcd","", "jkl");
+        List<String> filtered = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.toList());
+        System.out.println("筛选列表: " + filtered);
+        String mergedString = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.joining(", "));
+        System.out.println("合并字符串: " + mergedString);
+
+
+    }
+}
+
+
+
+// Random类：
+// ----------
+
+public boolean nextBoolean() // true, false各50%概率
+public double nextDouble() // 数值介于[0,1.0)之间
+public int nextInt() // 该值介于int的区间，也就是-231到231-1之间
+public int nextInt(int n) // 该值介于[0,n)的区间
+public void setSeed(long seed)  // 跟new Random(long seed)一致，设定seed值后，生成的随机数是一个定值
+
+
+
+
 集合
 ----------
 /*
@@ -1690,152 +1908,6 @@ Collections.shuffle(list): 可以打乱一个list顺序
 
 
 
-Random类：
-----------
-
-public boolean nextBoolean() // true, false各50%概率
-public double nextDouble() // 数值介于[0,1.0)之间
-public int nextInt() // 该值介于int的区间，也就是-231到231-1之间
-public int nextInt(int n) // 该值介于[0,n)的区间
-public void setSeed(long seed)  // 跟new Random(long seed)一致
-
-// java8 Stream
-// -------------
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.IntSummaryStatistics;
-import java.util.stream.Collectors;
-import java.util.Random;
-
-/*
-* stream()
-* ----------
-* forEach
-* map
-* reduce
-* filter
-* limit
-* sorted
-* Collectors
-* distinct
-* collect
-* */
-public class Main {
-    public static void main(String[] args) {
-
-        /**
-        * .stream()
-         *
-         * .filter()
-         * .isEmpty()
-         * .collect(Collectors.toList())
-         * import java.util.Arrays;
-         * import java.util.List;
-         * import java.util.stream.Collectors;
-        * */
-        List<String> strings = Arrays.asList("abc", "", "bc", "efg", "abcd","", "jkl");
-        List<String> filtered = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.toList());
-        System.out.println(filtered);
-
-        /**
-         * .parallelStream()
-         *
-         * .filter()
-         * .isEmpty()
-         * import java.util.Arrays;
-         * import java.util.List;
-         * */
-        List<String> strings = Arrays.asList("abc", "", "bc", "efg", "abcd"," ", "jkl");
-        // 获取空字符串的数量
-        long count = strings.parallelStream().filter(string -> string.isEmpty()).count();
-        System.out.println(count);
-
-
-        /**
-        * .forEach()
-         * .limt()
-         *
-         *  import java.util.Random;
-        * */
-        Random random = new Random();
-        random.ints().limit(5).forEach(System.out::println); //用系统函数使用::
-
-        /**
-        * .map()
-         *
-         * .distinct()
-         * .collect()
-         * import java.util.Arrays;
-         * import java.util.List;
-         * import java.util.stream.Collectors;
-        * */
-        List<Integer> numbers = Arrays.asList(3, 2, 2, 3, 7, 3, 5);
-        // 获取对应的平方数
-        List<Integer> squaresList = numbers.stream().map( i -> i*i).collect(Collectors.toList());
-        System.out.println(squaresList);
-
-
-        /**
-        * reduce()
-         *
-         * orElse()
-        * */
-        List<Integer> list = Arrays.asList(2, 4, 6 ,7);
-        // int sum = list.stream().reduce(Integer::sum).orElse(0); // orElse()这儿相当于是个可选项
-        int sum = list.stream().reduce((i, j) -> (i*10 + j)).orElse(0);
-        System.out.println(sum);
-
-
-        /**
-        * filter()
-         *
-         * .isBlank()
-         * .count()
-         * import java.util.Arrays;
-         * import java.util.List;
-        * */
-        List<String>strings = Arrays.asList("abc", "", "bc", "efg", "abcd"," ", "jkl");
-        // 获取空字符串的数量
-        long count = strings.stream().filter(string -> string.isBlank()).count();
-        System.out.println(count);
-
-
-        /**
-         * 统计
-         *
-         * import java.util.Arrays;
-         * import java.util.List;
-         * import java.util.IntSummaryStatistics;
-         */
-        List<Integer> numbers = Arrays.asList(3, 2, 2, 3, 7, 3, 5);
-        IntSummaryStatistics stats = numbers.stream().mapToInt((x) -> x).summaryStatistics();
-
-        System.out.println("列表中最大的数 : " + stats.getMax());
-        System.out.println("列表中最小的数 : " + stats.getMin());
-        System.out.println("所有数之和 : " + stats.getSum());
-        System.out.println("平均数 : " + stats.getAverage());
-
-
-        /**
-         * Collectors
-         *
-         * import java.util.Arrays;
-         * import java.util.List;
-         * import java.util.stream.Collectors;
-         * */
-        List<String>strings = Arrays.asList("abc", "", "bc", "efg", "abcd","", "jkl");
-        List<String> filtered = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.toList());
-        System.out.println("筛选列表: " + filtered);
-        String mergedString = strings.stream().filter(string -> !string.isEmpty()).collect(Collectors.joining(", "));
-        System.out.println("合并字符串: " + mergedString);
-
-
-    }
-}
-
-
-
 // 判断对象列表中是否包含contains，需要对equals进行重写：
 // 如果list.contains()不包含，则返回-1
 /*
@@ -1844,6 +1916,7 @@ equals的正确写法：
 2.用instanceof判断传入的待比较的Object是不是当前类型，如果是，继续比较，否则，返回false；
 3.对引用类型用Objects.equals()比较，对基本类型直接用==比较。
 */
+
 
 Map:
 HashMap,LinkedHashMap,EnumMap,TreeMap(实现了接口sortedMap)
@@ -2050,7 +2123,8 @@ public class Main {
         for (Student key : map.keySet()) {
             System.out.println(key);
         }
-        System.out.println(map.get(new Student("Bob", 66))); // null?
+        // {Lily: score=99} {Tom: score=77} {Bob: score=66}
+        System.out.println(map.get(new Student("Bob", 66))); // 2
     }
 }
 
@@ -2083,11 +2157,12 @@ public class Main {
         for (Student key : map.keySet()) {
             System.out.println(key);
         }
-        System.out.println(map.get(new Student("Bob", 66))); // null?
+        // {Bob: score=66} {Tom: score=77} {Lily: score=99}
+        System.out.println(map.get(new Student("Bob", 66))); // 2
     }
 }
 
-// 实现Comparable接口
+// Comparable接口
 class Student implements Comparable<Student> {
     public String name;
     public int score;
@@ -2103,6 +2178,7 @@ class Student implements Comparable<Student> {
             return 0;
         }
         return this.score < p.score ? -1 : 1;
+        // return this.score - p.score;
     }
 
     public String toString() {
@@ -2596,11 +2672,18 @@ IO流是一种流式的数据输入/输出模型：
     字符数据以char为最小单位在Reader/Writer中单向流动。
 
 Java标准库的java.io包提供了同步IO功能：
-    字节流接口：InputStream/OutputStream；
-    字符流接口：Reader/Writer。
+    字节流接口,byte为单位：InputStream/OutputStream；
+    字符流接口,char为单位：Reader/Writer。
 */
 
 
+
+/*
+File:
+-------
+*/
+
+// 路径
 import java.io.*;
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -2615,7 +2698,7 @@ public class Main {
 System.out.println(File.separator); // 根据当前平台win还是linux打印"\"或"/"
 
 
-
+// 判断
 import java.io.*;
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -2631,6 +2714,8 @@ boolean canRead()：是否可读；
 boolean canWrite()：是否可写；
 boolean canExecute()：是否可执行；
 long length()：文件字节大小。
+// new File(filePath).exists()
+// new File(filePath).getName()
 
 // 创建和删除文件：
 File file = new File("/path/to/file");
@@ -2642,8 +2727,7 @@ if (file.createNewFile()) {
     }
 }
 
-
-
+// 临时文件：
 // File对象提供了createTempFile()来创建一个临时文件，以及deleteOnExit()在JVM退出时自动删除该文件。
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -2653,7 +2737,6 @@ public class Main {
         System.out.println(f.getAbsolutePath());
     }
 }
-
 
 
 // list()和listFiles()列出目录下的文件和子目录名
@@ -2694,7 +2777,14 @@ boolean delete()：删除当前File对象表示的目录，当前目录必须为
 
 
 
+
+/*
+Path:
+-------
+*/
 // Java标准库还提供了一个Path对象，它位于java.nio.file包。Path对象和File对象类似，但操作更加简单
+// String name = Path.of(filePath).getFileName().toString()
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -2716,6 +2806,482 @@ public class Main {
     }
 }
 
+
+// InputStream:
+// ---------------
+
+// Java 7引入的新的try(resource),
+// 原先的try格式：
+// try{}finally{}
+
+
+public void readFile() throws IOException {
+    try (InputStream input = new FileInputStream("src/readme.txt")) {
+        int n;
+        while ((n = input.read()) != -1) {
+            System.out.println(n);
+        }
+    } // 编译器在此自动为我们写入finally并调用close()
+}
+
+// 实际上，编译器并不会特别地为InputStream加上自动关闭。编译器只看try(resource = ...)中的对象是否实现了java.lang.AutoCloseable接口，如果实现了，就自动加上finally语句并调用close()方法。InputStream和OutputStream都实现了这个接口，因此，都可以用在try(resource)中。
+
+
+// 缓冲:
+// read()：
+// int read(byte[] b)：读取若干字节并填充到byte[]数组，返回读取的字节数
+// int read(byte[] b, int off, int len)：指定byte[]数组的偏移量和最大填充数
+
+// ByteArrayInputStream可以在内存中模拟一个InputStream
+import java.io.*;
+public class Main {
+    public static void main(String[] args) throws IOException {
+        byte[] data = { 72, 101, 108, 108, 111, 33 };
+        try (InputStream input = new ByteArrayInputStream(data)) {
+            int n;
+            while ((n = input.read()) != -1) {
+                System.out.println((char)n);
+            }
+        }
+    }
+}
+
+
+// 读取文件，然后拼成一个字符串
+public class Main {
+    public static void main(String[] args) throws IOException {
+        String s;
+        try (InputStream input = new FileInputStream("C:\\test\\README.txt")) {
+            s = readAsString(input);
+        }
+        System.out.println(s);
+    }
+
+    public static String readAsString(InputStream input) throws IOException {
+        int n;
+        StringBuilder sb = new StringBuilder();
+        while ((n = input.read()) != -1) {
+            sb.append((char) n);
+        }
+        return sb.toString();
+    }
+}
+
+
+/*
+Java标准库的java.io.InputStream定义了所有输入流的超类：
+FileInputStream实现了文件流输入；
+ByteArrayInputStream在内存中模拟一个字节流输入。
+总是使用try(resource)来保证InputStream正确关闭。
+*/
+
+
+// OutputStream:
+// ---------------
+
+// 每次写入一个字节：
+public void writeFile() throws IOException {
+    OutputStream output = new FileOutputStream("out/readme.txt");
+    output.write(72); // H
+    output.write(101); // e
+    output.write(108); // l
+    output.write(108); // l
+    output.write(111); // o
+    output.close();
+}
+
+// 写入byte[]
+// void write(byte[])
+public void writeFile() throws IOException {
+    OutputStream output = new FileOutputStream("out/readme.txt");
+    output.write("Hello".getBytes("UTF-8")); // Hello
+    output.close();
+}
+
+// 上述需要考虑异常，需要用try(resource)来保证OutputStream在无论是否发生IO错误的时候都能够正确地关闭：
+public void writeFile() throws IOException {
+    try (OutputStream output = new FileOutputStream("out/readme.txt")) {
+        output.write("Hello".getBytes("UTF-8")); // Hello
+    } // 编译器在此自动为我们写入finally并调用close()
+}
+
+
+// ByteArrayOutputStream可以在内存中模拟一个OutputStream：
+import java.io.*;
+public class Main {
+    public static void main(String[] args) throws IOException {
+        byte[] data;
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            output.write("Hello ".getBytes("UTF-8"));
+            output.write("world!".getBytes("UTF-8"));
+            data = output.toByteArray();
+        }
+        System.out.println(new String(data, "UTF-8"));
+    }
+}
+
+// 同时读写两个文件：
+// 读取input.txt，写入output.txt:
+try (InputStream input = new FileInputStream("input.txt");
+     OutputStream output = new FileOutputStream("output.txt"))
+{
+    input.transferTo(output); // transferTo的作用是? 实际测试，这个方法没有把数据传输完，怎么解决？
+}
+
+
+/*
+steam和string 互转
+https://blog.csdn.net/qq_35240673/article/details/81478787
+https://www.cnblogs.com/javajetty/p/10684957.html
+
+String转为inputStream
+1.
+        InputStream is = new ByteArrayInputStream(str.getBytes());
+
+2.Apache
+        InputStream targetStream = IOUtils.toInputStream(str, StandardCharsets.UTF_8.name());
+
+
+inputStream转为string
+
+1.
+
+            InputStream inputStream = resource.getInputStream();
+            byte[] bytes = new byte[0];
+            bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            System.out.println("输出"+bytes );
+2.（个人建议这种）
+
+            InputStream inputStream = resource.getInputStream();
+            
+            StringBuilder sb = new StringBuilder();
+            String line;
+ 
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            
+            String str = sb.toString();
+            System.out.println("输出"+str );
+3. Apache （方便）
+String str = IOUtils.toString(inputStream, "utf-8");
+
+4.
+String result = new BufferedReader(new InputStreamReader(inputStream))
+.lines().parallel().collect(Collectors.joining(System.lineSeparator()));
+
+5.
+ByteArrayOutputStream result = new ByteArrayOutputStream();
+byte[] buffer = new byte[1024];
+int length;
+while ((length = inputStream.read(buffer)) != -1) {
+result.write(buffer, 0, length);
+}
+String str = result.toString(StandardCharsets.UTF_8.name());
+return str;
+
+6.
+BufferedInputStream bis = new BufferedInputStream(inputStream);
+ByteArrayOutputStream buf = new ByteArrayOutputStream();
+int result = bis.read();
+while(result != -1) {
+buf.write((byte) result);
+result = bis.read();
+}
+String str = buf.toString();
+return str;
+
+
+7.
+StringWriter writer = new StringWriter();
+IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8.name());
+String str = writer.toString();
+
+
+8.
+String str = new String(ByteStreams.toByteArray(inputStream));
+*/
+
+
+
+
+// Filter模式：
+// ------------
+/*
+FileInputStream：从文件读取数据，是最终数据源；
+ServletInputStream：从HTTP请求读取数据，是最终数据源；
+Socket.getInputStream()：从TCP连接读取数据，是最终数据源；
+
+InputStream file = new FileInputStream("test.gz");
+InputStream buffered = new BufferedInputStream(file);
+InputStream gzip = new GZIPInputStream(buffered);
+
+Filter模式可以在运行期动态增加功能（又称Decorator模式）
+
+我们也可以自己叠加多个InputStream子类
+*/
+
+
+// ZipInputStream:
+// -----------------
+// JarInputStream是从ZipInputStream派生，它增加的主要功能是直接读取jar文件里面的MANIFEST.MF文件。因为本质上jar包就是zip包，只是额外附加了一些固定的描述文件。
+
+// 读取zip
+// 一个ZipEntry表示一个压缩文件或目录，如果是压缩文件，我们就用read()方法不断读取，直到返回-1：
+try (ZipInputStream zip = new ZipInputStream(new FileInputStream(...))) {
+    ZipEntry entry = null;
+    while ((entry = zip.getNextEntry()) != null) {
+        String name = entry.getName();
+        if (!entry.isDirectory()) {
+            int n;
+            while ((n = zip.read()) != -1) {
+                ...
+            }
+        }
+    }
+}
+
+// 写入zip
+try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(...))) {
+    File[] files = ...
+    for (File file : files) {
+        zip.putNextEntry(new ZipEntry(file.getName()));
+        zip.write(getFileDataAsBytes(file));
+        zip.closeEntry();
+    }
+}
+
+
+// 从路径读取资源properties:
+String conf = "C:\\conf\\default.properties";
+try (InputStream input = new FileInputStream(conf)) {
+    // TODO:
+}
+// 从classpath读取资源:
+// 在classpath中的资源文件，路径总是以／开头
+try (InputStream input = getClass().getResourceAsStream("/default.properties")) {
+    if (input != null) { // 如果为null表示没有找到
+        // TODO:
+    }
+}
+
+// 如果我们把默认的配置放到jar包中，再从外部文件系统读取一个可选的配置文件，
+// 就可以做到既有默认的配置文件，又可以让用户自己修改配置：
+Properties props = new Properties();
+props.load(inputStreamFromClassPath("/default.properties"));
+props.load(inputStreamFromFile("./conf.properties"));
+
+
+
+/*
+序列化：
+------
+序列化是指把一个Java对象变成二进制内容，本质上就是一个byte[]数组。
+
+一个Java对象要能序列化，必须实现一个特殊的java.io.Serializable接口
+类似Serializable这样的空接口被称为“标记接口”（Marker Interface）
+*/ 
+
+// 把一个Java对象变为byte[]数组，需要使用ObjectOutputStream。它负责把一个Java对象写入一个字节流：
+import java.io.*;
+import java.util.Arrays;
+public class Main {
+    public static void main(String[] args) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try (ObjectOutputStream output = new ObjectOutputStream(buffer)) {
+            // 写入int:
+            output.writeInt(12345);
+            // 写入String:
+            output.writeUTF("Hello");
+            // 写入Object:
+            output.writeObject(Double.valueOf(123.456));
+        }
+        System.out.println(Arrays.toString(buffer.toByteArray()));
+        
+    }
+}
+
+
+/*
+反序列化:
+---------
+和ObjectOutputStream相反，ObjectInputStream负责从一个字节流读取Java对象：
+
+readObject()可能抛出的异常有：
+ClassNotFoundException：没有找到对应的Class；
+InvalidClassException：Class不匹配
+
+为了避免异常：
+Java的序列化允许class定义一个特殊的serialVersionUID静态变量，用于标识Java类的序列化id
+public class Person implements Serializable {
+    private static final long serialVersionUID = 2709425275741743919L;
+}
+
+//反序列化,反序列化时，由JVM直接构造出Java对象，不调用构造方法，构造方法内部的代码，在反序列化时根本不可能执行
+
+*/
+ByteArrayInputStream bufferin = new ByteArrayInputStream(buffer.toByteArray());
+
+try (ObjectInputStream input = new ObjectInputStream(bufferin)) {
+    int n = input.readInt();
+    String s = input.readUTF();
+    Double d = (Double) input.readObject();
+}
+
+
+/*
+Reader：
+*/
+
+// FileReader:
+// public int read() throws IOException;
+public void readFile() throws IOException {
+    // 创建一个FileReader对象:
+    try (Reader reader = new FileReader("src/readme.txt", StandardCharsets.UTF_8) {
+    // TODO
+        for (;;) {
+        int n = reader.read(); // 反复调用read()方法，直到返回-1
+        if (n == -1) {
+            break;
+        }
+        System.out.println((char)n); // 打印char
+        }
+    }
+}
+
+//public int read(char[] c) throws IOException
+public void readFile() throws IOException {
+    try (Reader reader = new FileReader("src/readme.txt", StandardCharsets.UTF_8)) {
+        char[] buffer = new char[1000];
+        int n;
+        while ((n = reader.read(buffer)) != -1) {  
+        //.read(char[] c)表示： 一次性读取若干字符并填充到char[]数组
+        // 返回实际读入的字符个数，最大不超过char[]数组的长度。返回-1表示流结束。
+            System.out.println("read " + n + " chars.");
+        }
+    }
+}
+
+
+/*
+CharArrayReader:
+CharArrayReader可以在内存中模拟一个Reader，它的作用实际上是把一个char[]数组变成一个Reader，这和ByteArrayInputStream非常类似：
+*/
+try (Reader reader = new CharArrayReader("Hello".toCharArray())) {
+}
+
+/*
+StringReader:
+StringReader可以直接把String作为数据源，它和CharArrayReader几乎一样：
+*/
+try (Reader reader = new StringReader("Hello")) {
+}
+
+
+/*
+InputStreamReader就是这样一个转换器，它可以把任何InputStream转换为Reader。
+
+// 持有InputStream:
+InputStream input = new FileInputStream("src/readme.txt");
+// 变换为Reader:
+Reader reader = new InputStreamReader(input, "UTF-8");
+
+使用try (resource)结构时，当我们关闭Reader时，它会在内部自动调用InputStream的close()方法，所以，只需要关闭最外层的Reader对象即可。
+
+*/
+// 整个过程可以简写成：
+try (Reader reader = new InputStreamReader(new FileInputStream("src/readme.txt"), "UTF-8")) {
+    // TODO:
+}
+/*
+Reader定义了所有字符输入流的超类：
+FileReader实现了文件字符流输入，使用时需要指定编码；
+CharArrayReader和StringReader可以在内存中模拟一个字符流输入。
+Reader是基于InputStream构造的：可以通过InputStreamReader在指定编码的同时将任何InputStream转换为Reader。
+总是使用try (resource)保证Reader正确关闭。
+*/
+
+
+
+/*
+writer
+
+写入一个字符（0~65535）：void write(int c)；
+写入字符数组的所有字符：void write(char[] c)；
+写入String表示的所有字符：void write(String s)。
+*/ 
+// FileWriter
+try (Writer writer = new FileWriter("readme.txt", StandardCharsets.UTF_8)) {
+    writer.write('H'); // 写入单个字符
+    writer.write("Hello".toCharArray()); // 写入char[]
+    writer.write("Hello"); // 写入String
+}
+
+// CharArrayWriter
+try (CharArrayWriter writer = new CharArrayWriter()) {
+    writer.write(65);
+    writer.write(66);
+    writer.write(67);
+    char[] data = writer.toCharArray(); // { 'A', 'B', 'C' }
+}
+
+// StringWriter
+
+
+// OutputStreamWriter
+// OutputStreamWriter就是一个将任意的OutputStream转换为Writer的转换器：
+
+try (Writer writer = new OutputStreamWriter(new FileOutputStream("readme.txt"), "UTF-8")) {
+    // TODO:
+}
+
+/*
+Writer定义了所有字符输出流的超类：
+FileWriter实现了文件字符流输出；
+CharArrayWriter和StringWriter在内存中模拟一个字符流输出。
+使用try (resource)保证Writer正确关闭。
+Writer是基于OutputStream构造的，可以通过OutputStreamWriter将OutputStream转换为Writer，转换时需要指定编码。
+*/
+
+
+
+/*
+PrintStream和PrintWriter
+
+PrintStream是一种FilterOutputStream，它在OutputStream的接口上，额外提供了一些写入各种数据类型的方法：
+
+写入int：print(int)
+写入boolean：print(boolean)
+写入String：print(String)
+写入Object：print(Object)，实际上相当于print(object.toString())
+
+System.out.println()实际上就是使用PrintStream打印各种数据, 不会抛出IOException
+System.err是系统默认提供的标准错误输出。
+
+PrintStream是一种能接收各种数据类型的输出，打印数据时比较方便：
+System.out是标准输出；
+System.err是标准错误输出。
+PrintWriter是基于Writer的输出。
+*/
+
+// PrintWriter:
+// -------------
+// PrintStream最终输出的总是byte数据，而PrintWriter则是扩展了Writer接口，它的print()/println()方法最终输出的是char数据。两者的使用方法几乎是一模一样的：
+
+import java.io.*;
+public class Main {
+    public static void main(String[] args)     {
+        StringWriter buffer = new StringWriter();
+        try (PrintWriter pw = new PrintWriter(buffer)) {
+            pw.println("Hello");
+            pw.println(12345);
+            pw.println(true);
+        }
+        System.out.println(buffer.toString());
+    }
+}
 
 
 
@@ -2952,3 +3518,3224 @@ public class Collections {
 void sample(Pair<?> p) {
 }
 Pair<?>是所有Pair<T>的超类：
+
+
+
+
+正则表达式
+-----------
+String str = "32";
+boolean result = str.matches("[\\d]+");
+
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+public class Main{
+    public static void main(String[] args) {
+        Pattern pattern = Pattern.compile("(\\d{3,4})\\-(\\d{7,8})"); // 分组，要用到小括号
+        Matcher matcher = pattern.matcher("010-12345678");
+        if (matcher.matches()){
+            // 用group之前，必须先matches(),匹配成功后，才能得到字符串
+            // group(0)获取全部字符串，group(1)获取分组后的第一个
+            System.out.println(matcher.group(0));
+            System.out.println(matcher.group(1));
+            System.out.println(matcher.group(2));
+        }
+    }
+}
+
+
+// 默认都是贪婪匹配：
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+public class Main {
+    public static void main(String[] args) {
+        Pattern pattern = Pattern.compile("(\\d+)(0*)");
+        Matcher matcher = pattern.matcher("1230000");
+        if (matcher.matches()) {
+            System.out.println("group1=" + matcher.group(1)); // "1230000"
+            System.out.println("group2=" + matcher.group(2)); // ""
+        }
+    }
+}
+
+// 加一个？即可以非贪婪匹配
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+public class Main {
+    public static void main(String[] args) {
+        Pattern pattern = Pattern.compile("(\\d+?)(0*)");
+        Matcher matcher = pattern.matcher("1230000");
+        if (matcher.matches()) {
+            System.out.println("group1=" + matcher.group(1)); // "123"
+            System.out.println("group2=" + matcher.group(2)); // "0000"
+        }
+    }
+}
+
+// 分割字符串
+"a b c".split("\\s"); // { "a", "b", "c" }
+"a b  c".split("\\s"); // { "a", "b", "", "c" }
+"a, b ;; c".split("[\\,\\;\\s]+"); // { "a", "b", "c" }
+
+
+// 查找正则字符串：
+//find()只发现匹配的部分字段
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+public class Main{
+    public static void main(String[] args) {
+        String str = "全部fe8832He8你说";
+        Pattern pattern = Pattern.compile("\\d+"); // 分组，要用到小括号
+        System.out.println(pattern.pattern());
+        Matcher matcher = pattern.matcher(str);
+        if (matcher.find()){
+            System.out.println(matcher.group(0));
+            System.out.println(str.substring(matcher.start(), matcher.end()));
+            System.out.println(matcher.replaceAll("").trim());
+        }
+        pattern = Pattern.compile("[^\\d]+");
+        matcher = pattern.matcher(str);
+        if (matcher.find()){
+            System.out.println(matcher.replaceAll("").trim());
+        }
+    }
+}
+// \d+
+// 8832
+// 8832
+// 全部feHe你说
+// 88328
+
+
+// 替换：
+String s = "A,,B;C ,D";
+s.replaceAll("[\\,\\;\\s]+", ","); // "A,B,C,D", 不改变s的值
+
+
+/*
+网络编程：
+--------------
+
+
+TCP/IP四层模型：
+应用层: 包括应用层，表示层，会话层。应用层提供应用程序之间的通信,会话层：负责建立和维护会话；表示层：处理数据格式，加解密等等；
+传输层: 负责提供端到端的可靠传输；
+IP层: 又称为网络层，负责根据目标地址选择路由来传输数据；
+网络接口层: 包括链路层和物理层，链路层和物理层负责把数据进行分片并且真正通过物理网络传输，例如，无线网、光纤等。
+
+
+TCP
+
+TCP协议是传输控制协议，它是面向连接的协议，支持可靠传输和双向通信。TCP协议是建立在IP协议之上的，TCP协议是应用最广泛的协议，许多高级协议都是建立在TCP协议之上的，例如HTTP、SMTP等。
+
+UDP协议（User Datagram Protocol）是一种数据报文协议，它是无连接协议，不保证可靠传输。因为UDP协议在通信前不需要建立连接，因此它的传输效率比TCP高，而且UDP协议比TCP协议要简单得多。
+
+
+*/
+
+
+/*
+一个Socket就是由IP地址和端口号（范围是0～65535）组成，可以把Socket简单理解为IP地址加端口号。
+端口号总是由操作系统分配，它是一个0～65535之间的数字，其中，小于1024的端口属于特权端口，需要管理员权限，大于1024的端口可以由任意用户的应用程序打开。
+
+当Socket连接成功地在服务器端和客户端之间建立后：
+对服务器端来说，它的Socket是指定的IP地址和指定的端口号；
+对客户端来说，它的Socket是它所在计算机的IP地址和一个由操作系统分配的随机端口号。
+
+
+
+使用Java进行TCP编程时，需要使用Socket模型：
+
+服务器端用ServerSocket监听指定端口；
+客户端使用Socket(InetAddress, port)连接服务器；
+服务器端用accept()接收连接并返回Socket；
+双方通过Socket打开InputStream/OutputStream读写数据；
+服务器端通常使用多线程同时处理多个客户端连接，利用线程池可大幅提升效率；
+flush()用于强制输出缓冲区到网络。
+
+*/
+
+
+
+/*
+TCP编程：
+---------
+OutputStream outputStream = socket.getOutputStream();
+outputStream.write("你好，服务器！".getBytes());
+
+// 读：
+InputStream inputStream = socket.getInputStream();
+byte[] bytes = new byte[1024];
+
+int len = inputStream.read(bytes);
+System.out.println(new String(bytes,0,len));// 读取固定长度
+
+int len = 0;
+while((len = inputStream.read(bytes)) != -1) { // 一直读取
+    os.write(bytes);
+    os.flush();
+}
+
+socket.close();
+
+
+// 写：
+OutputStream os = client.getOutputStream();
+InputStream in = new FileInputStream("Users/xx/Desktop/hello");
+byte[] bytes = new byte[1024];
+int len = 0;
+while((len = in.read(bytes)) != -1) {
+    os.write(bytes);
+}
+os.close();
+in.close();
+
+
+*/
+
+// server:
+
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+
+
+public class Server {
+    public static void main(String[] args) throws IOException {
+        ServerSocket ss = new ServerSocket(6666); // 监听指定端口
+        System.out.println("server is running...");
+        for (; ; ) {
+            Socket sock = ss.accept();
+            System.out.println("connected from " + sock.getRemoteSocketAddress());
+            Thread t = new Handler(sock);
+            t.start();
+        }
+    }
+}
+
+class Handler extends Thread {
+    Socket sock;
+
+    public Handler(Socket sock) {
+        this.sock = sock;
+    }
+
+    @Override
+    public void run() {
+        try (InputStream input = this.sock.getInputStream()) {
+            try (OutputStream output = this.sock.getOutputStream()) {
+                handle(input, output);
+            }
+        } catch (Exception e) {
+            try {
+                this.sock.close();
+            } catch (IOException ioe) {
+            }
+            System.out.println("client disconnected.");
+        }
+    }
+
+    private void handle(InputStream input, OutputStream output) throws IOException {
+        var reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        var writer = new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8));   
+        writer.write("hello\n");
+        writer.flush();
+        for (; ; ) {
+            String s = reader.readLine();
+            if (s.equals("bye")) {
+                writer.write("bye\n");
+                writer.flush();
+                break;
+            }
+            writer.write("ok: " + s + "\n");
+            writer.flush();
+        }
+    }
+}
+
+
+
+// client:
+
+import java.io.*;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+
+public class Client {
+    public static void main(String[] args) throws IOException {
+        Socket sock = new Socket("localhost", 6666); // 连接指定服务器和端口
+        try (InputStream input = sock.getInputStream()) {
+            try (OutputStream output = sock.getOutputStream()) {
+                handle(input, output);
+            }
+        }
+        sock.close();
+        System.out.println("disconnected.");
+    }
+
+    private static void handle(InputStream input, OutputStream output) throws IOException {
+        var reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        var writer = new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8));
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("[server] " + reader.readLine());
+        for (;;) {
+            System.out.print(">>> "); // 打印提示
+            String s = scanner.nextLine(); // 读取一行输入
+            writer.write(s);
+            writer.newLine();
+            writer.flush();
+            String resp = reader.readLine();
+            System.out.println("<<< " + resp);
+            if (resp.equals("bye")) {
+                break;
+            }
+        }
+    }
+}
+
+
+
+// UDP编程：
+// -------------
+/*
+当服务器收到一个DatagramPacket后，通常必须立刻回复一个或多个UDP包，因为客户端地址在DatagramPacket中，每次收到的DatagramPacket可能是不同的客户端，如果不回复，客户端就收不到任何UDP包。
+
+如果客户端希望向两个不同的服务器发送UDP包，那么它必须创建两个DatagramSocket实例。
+通常来说，客户端必须先发UDP包，因为客户端不发UDP包，服务器端就根本不知道客户端的地址和端口号。
+
+disconnect()也不是真正地断开连接，它只是清除了客户端DatagramSocket实例记录的远程服务器地址和端口号，
+这样，DatagramSocket实例就可以连接另一个服务器端。
+*/
+
+//server:
+import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.nio.charset.StandardCharsets;
+
+public class Server {
+    public static void main(String[] args) throws IOException {
+        DatagramSocket ds = new DatagramSocket(6666); // 监听指定端口
+        for (;;) { // 无限循环
+            // 数据缓冲区:
+            byte[] buffer = new byte[1024];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            ds.receive(packet); // 收取一个UDP数据包
+            // 收取到的数据存储在buffer中，由packet.getOffset(), packet.getLength()指定起始位置和长度
+            // 将其按UTF-8编码转换为String:
+            String s = new String(packet.getData(), packet.getOffset(), packet.getLength(), StandardCharsets.UTF_8);
+            // 发送数据:
+            byte[] data = "ACK".getBytes(StandardCharsets.UTF_8);
+            packet.setData(data);
+            ds.send(packet);
+        }
+    }
+}
+
+// client:
+import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+
+public class Client {
+    public static void main(String[] args) throws IOException {
+        DatagramSocket ds = new DatagramSocket();
+        ds.setSoTimeout(1000);
+        ds.connect(InetAddress.getByName("localhost"), 6666); // 连接指定服务器和端口
+// 发送:
+        byte[] data = "Hello".getBytes();
+        DatagramPacket packet = new DatagramPacket(data, data.length);
+        ds.send(packet);
+// 接收:
+        byte[] buffer = new byte[1024];
+        packet = new DatagramPacket(buffer, buffer.length);
+        ds.receive(packet);
+        String resp = new String(packet.getData(), packet.getOffset(), packet.getLength());
+        ds.disconnect();
+    }
+}
+
+
+// 发送和接受邮件：
+// -------------
+/*
+SMTP协议，它是Simple Mail Transport Protocol的缩写，使用标准端口25，也可以使用加密端口465或587。
+SMTP协议是一个建立在TCP之上的协议
+
+QQ邮箱：
+接收邮件服务器：imap.qq.com，使用SSL，端口号993
+发送邮件服务器：smtp.qq.com，使用SSL，端口号465或587
+
+qq企业邮箱：
+接收服务器：imap.exmail.qq.com(使用SSL，端口号993)
+发送服务器：smtp.exmail.qq.com(使用SSL，端口号465)
+
+163邮箱：SMTP服务器是smtp.163.com，端口是465；
+Gmail邮箱：SMTP服务器是smtp.gmail.com，端口是465/587。
+
+
+接收邮件使用最广泛的协议是POP3：Post Office Protocol version 3，
+它也是一个建立在TCP连接之上的协议。POP3服务器的标准端口是110，如果整个会话需要加密，那么使用加密端口995。
+
+
+<dependencies>
+    <dependency>
+        <groupId>javax.mail</groupId>
+        <artifactId>javax.mail-api</artifactId>
+        <version>1.6.2</version>
+    </dependency>
+    <dependency>
+        <groupId>com.sun.mail</groupId>
+        <artifactId>javax.mail</artifactId>
+        <version>1.6.2</version>
+    </dependency>
+    ...
+
+*/
+
+// 发送邮件
+package com.email;
+
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
+
+public class Email {
+    public static void main(String[] args) throws MessagingException {
+        // 服务器地址:
+        String smtp = "smtp.exmail.qq.com";
+        // 登录用户名:
+        final String username = "from@camera360.com";
+        // 登录口令:
+        final String password = "****";//qq邮箱是口令牌，需要在账户->设置中开启smtp,获取口令牌
+        // 连接到SMTP服务器587端口:
+        Properties props = new Properties();
+        props.put("mail.smtp.host", smtp); // SMTP主机名
+        props.put("mail.smtp.port", "465"); // 主机端口号
+        props.put("mail.smtp.auth", "true"); // 是否需要用户认证
+        // props.put("mail.smtp.starttls.enable", "true"); // 启用TLS加密
+        props.put("mail.smtp.ssl.enable", "true"); // ssl
+        // 获取Session实例:
+        Session session = Session.getInstance(props, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
+        // 设置debug模式便于调试:
+        session.setDebug(true);
+
+        MimeMessage message = new MimeMessage(session);
+        // 设置发送方地址:
+        message.setFrom(new InternetAddress("from@camera360.com"));
+        // 设置接收方地址:
+        message.setRecipient(Message.RecipientType.TO, new InternetAddress("xx@qq.com"));
+        // 设置邮件主题:
+        message.setSubject("Hello", "UTF-8");
+        // 设置纯文本邮件正文:
+        message.setText("Hi Xiaoming...", "UTF-8");
+        // 发送:
+        Transport.send(message);
+    }
+}
+
+
+/*
+发送HTML邮件:
+发送HTML邮件和文本邮件是类似的，只需要把：
+message.setText(body, "UTF-8");
+改为：
+message.setText(body, "UTF-8", "html");
+传入的body是类似<h1>Hello</h1><p>Hi, xxx</p>这样的HTML字符串即可。
+
+
+常见问题：
+1.如果用户名或口令错误，会导致535登录失败：
+
+DEBUG SMTP: AUTH LOGIN failed
+Exception in thread "main" javax.mail.AuthenticationFailedException: 535 5.7.3 Authentication unsuccessful [HK0PR03CA0105.apcprd03.prod.outlook.com]
+
+2.如果登录用户和发件人不一致，会导致554拒绝发送错误：
+
+DEBUG SMTP: MessagingException while sending, THROW: 
+com.sun.mail.smtp.SMTPSendFailedException: 554 5.2.0 STOREDRV.Submission.Exception:SendAsDeniedException.MapiExceptionSendAsDenied;
+
+3.有些时候，如果邮件主题和正文过于简单，会导致554被识别为垃圾邮件的错误：
+
+DEBUG SMTP: MessagingException while sending, THROW: 
+com.sun.mail.smtp.SMTPSendFailedException: 554 DT:SPM
+*/
+
+package com.email;
+
+import javax.activation.DataHandler;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class Email {
+    public static void main(String[] args) throws MessagingException {
+        // 服务器地址:
+        String smtp = "smtp.exmail.qq.com";
+        // 登录用户名:
+        final String username = "from@camera360.com";
+        // 登录口令:
+        final String password = "*****";//qq邮箱是口令牌，需要在账户->设置中开启smtp,获取口令牌
+        // 连接到SMTP服务器587端口:
+        Properties props = new Properties();
+        props.put("mail.smtp.host", smtp); // SMTP主机名
+        props.put("mail.smtp.port", "465"); // 主机端口号
+        props.put("mail.smtp.auth", "true"); // 是否需要用户认证
+        // props.put("mail.smtp.starttls.enable", "true"); // 启用TLS加密
+        props.put("mail.smtp.ssl.enable", "true"); // ssl
+        // 获取Session实例:
+        Session session = Session.getInstance(props, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
+        // 设置debug模式便于调试:
+        session.setDebug(true);
+
+        MimeMessage message = new MimeMessage(session);
+        // 设置发送方地址:
+        message.setFrom(new InternetAddress("from@camera360.com"));
+        /**
+        * 设置接收方地址:set,add方法都有添加单个，数组的方法
+         * message.setRecipient(Message.RecipientType.TO, new InternetAddress("578628438@qq.com"));
+         * 多个地址添加数组
+         * message.addRecipients(Message.RecipientType.TO, new InternetAddress[]{new InternetAddress("508628438@qq.com")});
+         *
+         * Message.RecipientType.TO是主送人，Message.RecipientType.CC抄送，BCC是密送
+        * */
+        String recipientUserString = "a@camera360.com,b@camera360.com";
+        if (recipientUserString !=null && !recipientUserString.isEmpty()){
+            InternetAddress[] addresses = new InternetAddress().parse(recipientUserString);
+            message.setRecipients(Message.RecipientType.TO, addresses);
+            message.setRecipients(Message.RecipientType.CC, "from@camera360.com");
+        }
+        // 设置邮件主题:
+        message.setSubject("HomeWork: Email from a robot", "UTF-8");
+        // 设置邮件纯文本的时候:
+        // message.setText("Hi Xiaoming...", "UTF-8");
+
+        // 一个multipart可以添加多个BodyPart
+        Multipart multipart = new MimeMultipart();
+
+        /*添加正文文本: */
+        BodyPart textPart = new MimeBodyPart();
+        String body = "<h3 align ='left'>Hi, buddy:<br>I'm a email robot!</h3>";
+        textPart.setContent(body, "text/html;charset=utf-8");// 设置为网页格式:
+        // textPart.setContent(body, "text/plain;charset=utf-8");// 设置为文字格式:
+        multipart.addBodyPart(textPart);
+
+        /*添加内嵌网页：*/
+        // html text:
+        BodyPart emTextPart = new MimeBodyPart();
+        // 需要对图
+        emTextPart.setContent("<h4>给你看个老照片：</h4><p><img src=\"cid:img01\"></p>", "text/html;charset=utf-8");
+        multipart.addBodyPart(emTextPart);
+        // html image:
+        BodyPart emImagePart = new MimeBodyPart();
+        emImagePart.setFileName("1.jpg");
+        try(InputStream input = new FileInputStream("/Users/captain/Desktop/old.jpg")){
+            emImagePart.setDataHandler(new DataHandler(new ByteArrayDataSource(input, "image/jpeg")));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 设置header, 与HTML的<img src="cid:img01">关联:
+        emImagePart.setHeader("Content-ID", "<img01>");
+        // emImagePart.setContentID("img01");
+        // emImagePart.setHeader("Content-ID", "img01");
+        multipart.addBodyPart(emImagePart);
+
+        /*添加image附件: */
+        BodyPart imagePart = new MimeBodyPart();
+        imagePart.setFileName("vivo.gif");// 文件名和真实名字可以不一致
+        /*
+        如果添加附件，需要设置文件名，并且添加一个DataHandler()，传入文件的MIME类型。
+        二进制文件可以用application/octet-stream，Word文档则是application/msword
+        */
+        try (InputStream input = new FileInputStream("/Users/captain/Desktop/vivo.gif")){
+            imagePart.setDataHandler(new DataHandler(new ByteArrayDataSource(input, "application/octet-stream")));
+            multipart.addBodyPart(imagePart);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 设置邮件内容为multipart:
+        message.setContent(multipart);
+        // 发送:
+        Transport.send(message);
+    }
+}
+
+
+
+/*
+RMI:
+
+*/
+
+
+
+
+
+// Http编程：
+// -------------
+
+/*
+
+Host：表示请求的域名，因为一台服务器上可能有多个网站，因此有必要依靠Host来识别用于请求；
+User-Agent：表示客户端自身标识信息，不同的浏览器有不同的标识，服务器依靠User-Agent判断客户端类型；
+Accept：表示客户端能处理的HTTP响应格式，*/*表示任意格式，text/*表示任意文本，image/png表示PNG格式的图片；
+Accept-Language：表示客户端接收的语言，多种语言按优先级排序，服务器依靠该字段给用户返回特定语言的网页版本。
+
+GET请求的参数必须附加在URL上，并以URLEncode方式编码，例如：http://www.example.com/?a=1&b=K%26R，参数分别是a=1和b=K&R。
+因为URL的长度限制，GET请求的参数不能太多，而POST请求的参数就没有长度限制，因为POST请求的参数必须放到Body中。
+并且，POST请求的参数不一定是URL编码，可以按任意格式编码，只需要在Content-Type中正确设置即可。
+
+
+Content-Type:
+text/plain;
+application/json
+application/x-www-form-urlencoded
+text/html
+image/jpeg
+
+
+早期的HTTP/1.0协议，每次发送一个HTTP请求，客户端都需要先创建一个新的TCP连接，然后，收到服务器响应后，关闭这个TCP连接。
+由于建立TCP连接就比较耗时，因此，为了提高效率，HTTP/1.1协议允许在一个TCP连接中反复发送-响应，这样就能大大提高效率：
+
+HTTP/2.0允许客户端在没有收到响应的时候，发送多个HTTP请求，服务器返回响应的时候，不一定按顺序返回，
+只要双方能识别出哪个响应对应哪个请求，就可以做到并行发送和接收：
+*/
+
+// java http请求的三种方式：
+// https://www.cnblogs.com/hhhshct/p/8523697.html
+
+//标准库访问http:(比较繁琐，弃用)
+URL url = new URL("http://www.example.com/path/to/target?a=1&b=2");
+HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+conn.setRequestMethod("GET");
+conn.setUseCaches(false);
+conn.setConnectTimeout(5000); // 请求超时5秒
+// 设置HTTP头:
+conn.setRequestProperty("Accept", "*/*");
+conn.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; MSIE 11; Windows NT 5.1)");
+// 连接并发送HTTP请求:
+conn.connect();
+// 判断HTTP响应是否200:
+if (conn.getResponseCode() != 200) {
+    throw new RuntimeException("bad response");
+}       
+// 获取所有响应Header:
+Map<String, List<String>> map = conn.getHeaderFields();
+for (String key : map.keySet()) {
+    System.out.println(key + ": " + map.get(key));
+}
+// 获取响应内容:
+InputStream input = conn.getInputStream();
+...
+
+
+// JDK11后,引入了新的HttpClient，支持链式：
+// get()
+import java.net.URI;
+import java.net.http.*;
+import java.net.http.HttpClient.Version;
+import java.time.Duration;
+import java.util.*;
+
+public class Main {
+    // 全局HttpClient:
+    static HttpClient httpClient = HttpClient.newBuilder().build();
+
+    public static void main(String[] args) throws Exception {
+        String url = "https://www.sina.com.cn/";
+        HttpRequest request = HttpRequest.newBuilder(new URI(url))
+                // 设置Header:
+                .header("User-Agent", "Java HttpClient").header("Accept", "*/*")
+                // 设置超时:
+                .timeout(Duration.ofSeconds(5))
+                // 设置版本:
+                .version(Version.HTTP_2).build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        // HTTP允许重复的Header，因此一个Header可对应多个Value:
+        Map<String, List<String>> headers = response.headers().map();
+        for (String header : headers.keySet()) {
+            System.out.println(header + ": " + headers.get(header).get(0));
+        }
+        System.out.println(response.body().substring(0, 1024) + "...");
+    }
+}
+
+/*
+如果我们要获取图片这样的二进制内容，只需要把HttpResponse.BodyHandlers.ofString()换成HttpResponse.BodyHandlers.ofByteArray()，就可以获得一个HttpResponse<byte[]>对象。
+如果响应的内容很大，不希望一次性全部加载到内存，可以使用HttpResponse.BodyHandlers.ofInputStream()获取一个InputStream流。
+*/
+
+
+// post()
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+
+public class Main {
+    // 全局HttpClient:
+    static HttpClient httpClient = HttpClient.newBuilder().build();
+
+    public static void main(String[] args) throws Exception {
+        String url = "http://www.example.com/login";
+        String body = "username=bob&password=123456";
+        HttpRequest request = HttpRequest.newBuilder(new URI(url))
+                // 设置Header:
+                .header("Accept", "*/*")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                // 设置超时:
+                .timeout(Duration.ofSeconds(5))
+                // 设置版本:
+                .version(HttpClient.Version.HTTP_2)
+                // 使用POST并设置Body:
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        String s = response.body();
+        System.out.println(s);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 编码和加密：
+
+/*
+
+URL编码
+https://www.baidu.com/s?wd=%E4%B8%AD%E6%96%87
+
+URL编码有一套规则：
+
+如果字符是A~Z，a~z，0~9以及-、_、.、*，则保持不变；
+如果是其他字符，先转换为UTF-8编码，然后对每个字节以%XX表示。
+
+例如：字符 中 的UTF-8编码是0xe4b8ad，因此，它的URL编码是%E4%B8%AD。URL编码总是大写。
+
+和标准的URL编码稍有不同，URLEncoder把空格字符编码成+，而现在的URL编码标准要求空格被编码为%20，不过，服务器都可以处理这两种情况。
+
+URL编码是编码算法，不是加密算法。URL编码的目的是把任意文本数据编码为%前缀表示的文本，
+
+编码后的文本仅包含A~Z，a~z，0~9，-，_，.，*和%，便于浏览器和服务器处理。
+*/
+
+//urlencode
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+public class Main {
+    public static void main(String[] args) {
+        String encoded = URLEncoder.encode("中文!", StandardCharsets.UTF_8);
+        System.out.println(encoded);
+    }
+}
+
+//urldecode
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+public class Main {
+    public static void main(String[] args) {
+        String decoded = URLDecoder.decode("%E4%B8%AD%E6%96%87%21", StandardCharsets.UTF_8);
+        System.out.println(decoded);
+    }
+}
+
+
+/*
+Base64编码:
+URL编码是对字符进行编码，表示成%xx的形式，而Base64编码是对二进制数据进行编码，表示成文本格式。
+
+这样在很多文本中就可以处理二进制数据。例如，电子邮件协议就是文本协议，如果要在电子邮件中添加一个二进制文件，就可以用Base64编码，然后以文本的形式传送。
+
+Base64编码可以把任意长度的二进制数据变为纯文本，且只包含A~Z、a~z、0~9、+、/、=这些字符。它的原理是把3字节的二进制数据按6bit一组，用4个int整数表示，然后查表，把int整数用索引对应到字符，得到编码后的字符串。
+
+缺点：Base64编码的缺点是传输效率会降低，因为它把原始数据的长度增加了1/3。
+和URL编码一样，Base64编码是一种编码算法，不是加密算法。
+
+举个例子：3个byte数据分别是e4、b8、ad，按6bit分组得到39、0b、22和2d：
+*/
+
+
+//encode
+import java.util.Base64;
+public class Main {
+    public static void main(String[] args) {
+        byte[] input = new byte[] { (byte) 0xe4, (byte) 0xb8, (byte) 0xad };
+        String b64encoded = Base64.getEncoder().encodeToString(input); // 5Lit
+        System.out.println(b64encoded);
+    }
+}
+
+//decode
+import java.util.Arrays;
+import java.util.Base64;
+public class Main {
+    public static void main(String[] args) {
+        byte[] output = Base64.getDecoder().decode("5Lit");
+        System.out.println(Arrays.toString(output)); // [-28, -72, -83]
+    }
+}
+
+// 如果输入的byte[]数组长度不是3的整数倍肿么办？这种情况下，需要对输入的末尾补一个或两个0x00，编码后，在结尾加一个=表示补充了1个0x00，加两个=表示补充了2个0x00，解码的时候，去掉末尾补充的一个或两个0x00即可。
+
+// 实际上，因为编码后的长度加上=总是4的倍数，所以即使不加=也可以计算出原始输入的byte[]。Base64编码的时候可以用withoutPadding()去掉=，解码出来的结果是一样的：
+
+// 非3的倍数encode:
+import java.util.Arrays;
+import java.util.Base64;
+public class Main {
+    public static void main(String[] args) {
+        byte[] input = new byte[] { (byte) 0xe4, (byte) 0xb8, (byte) 0xad, (byte)0x21 };
+        String b64encoded = Base64.getEncoder().encodeToString(input); // 5LitIQ==
+        String b64encoded2 = Base64.getEncoder().withoutPadding().encodeToString(input);// 5LitIQ
+        System.out.println(b64encoded);
+        System.out.println(b64encoded2);
+        byte[] output = Base64.getDecoder().decode(b64encoded2);// [-28, -72, -83, 33]
+        System.out.println(Arrays.toString(output));
+    }
+}
+
+
+// 因为标准的Base64编码会出现+、/和=，所以不适合把Base64编码后的字符串放到URL中。
+// 一种针对URL的Base64编码可以在URL中使用的Base64编码，它仅仅是把+变成-，/变成_
+
+//base64.urlencode()
+import java.util.Arrays;
+import java.util.Base64;
+public class Main {
+    public static void main(String[] args) {
+        byte[] input = new byte[] { 0x01, 0x02, 0x7f, 0x00 };
+        String b64encoded = Base64.getUrlEncoder().encodeToString(input);
+        String encoded = Base64.getEncoder().encodeToString(input);
+        System.out.println(b64encoded); // AQJ_AA==
+        System.out.println(encoded);  // AQJ/AA==
+        byte[] output = Base64.getUrlDecoder().decode(b64encoded);
+        System.out.println(Arrays.toString(output)); // [1, 2, 127, 0]
+    }
+}
+
+
+/*
+// 哈希算法：
+哈希算法        输出长度(bit)       输出长度(字节)
+MD5             128 bit             16 bytes
+RipeMD160       160 bits            20 bytes
+SHA-1           160 bits            20 bytes  
+SHA-256         256 bits            32 bytes
+SHA-512         512 bits            64 bytes
+
+SHA-1是由美国国家安全局开发的，SHA算法实际上是一个系列,SHA-0已经弃用
+
+比特币使用的哈希算法有两种：SHA-256和RipeMD160
+根据碰撞概率，哈希算法的输出长度越长，就越难产生碰撞，也就越安全。
+
+使用哈希口令时，还要注意防止彩虹表攻击。
+什么是彩虹表呢？拿到MD5，按照预先计算好的常用口令和它们的MD5的对照表，从MD5反推明文口令。
+
+我们也可以采取措施来抵御彩虹表攻击，方法是对每个口令额外添加随机数，这个方法称之为加盐（salt）：
+digest = md5(salt+inputPassword)
+*/
+
+// MD5
+import java.math.BigInteger;
+import java.security.MessageDigest;
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 创建一个MessageDigest实例:
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        // 反复调用update输入数据:
+        md.update("Hello".getBytes("UTF-8"));
+        md.update("World".getBytes("UTF-8"));
+        //当输入结束后，调用digest()方法获得byte[]数组表示的摘要
+        byte[] result = md.digest();
+        // 转换为16进制的字符串 // 16 bytes: 68e109f0f40ca72a15e05cc22786f8e6
+        System.out.println(new BigInteger(1, result).toString(16));
+    }
+
+
+    // 另外一种通过byte[]生成16进制数的方法：
+    // https://www.cnblogs.com/think-in-java/p/5527389.html
+    // https://www.cnblogs.com/zktww/p/10388098.html
+    byte[] dataMD5Byte = md.digest();
+
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i<dataMD5Byte.length; i++){
+        int c = dataMD5Byte[i] & 0xFF;  // 等同于 unsigned int c = dataMD5Byte[i];因为java天生没有 unsigned
+        String e = Integer.toHexString(c);
+        // 通过length，或者数字大小来判断
+        // if (e.length() < 2){
+        //     builder.append(0);
+        // }
+        if (c < 16){
+            builder.append(0);
+        }
+        builder.append(e);
+    }
+    System.out.println("builder = "+builder);
+
+
+    // 另外一种生成md5的方法，结果与上面一致
+    // https://www.jianshu.com/p/9527f343f5da
+    public final static String MD5(String s) {
+        char hexDigits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'a', 'b', 'c', 'd', 'e', 'f' };
+        try {
+            byte[] strTemp = s.getBytes();
+            MessageDigest mdTemp = MessageDigest.getInstance("MD5");
+            mdTemp.update(strTemp);
+            byte[] md = mdTemp.digest();
+            int j = md.length;
+            char str[] = new char[j * 2];
+            int k = 0;
+            for (int i = 0; i < j; i++) {
+                byte byte0 = md[i];
+                str[k++] = hexDigits[byte0 >>> 4 & 0xf];
+                str[k++] = hexDigits[byte0 & 0xf];
+            }
+            return new String(str);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static String md5(String str) {  
+        String digest = null;  
+        StringBuffer buffer = new StringBuffer();  
+        try {  
+            MessageDigest digester = MessageDigest.getInstance("md5");  
+            byte[] digestArray = digester.digest(str.getBytes());  
+            for (int i = 0; i < digestArray.length; i++) {  
+                buffer.append(String.format("%02x", digestArray[i]));  
+            }  
+            digest = buffer.toString();  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+        }  
+        return digest;  
+    } 
+
+}
+
+
+/*
+负数与0xff后，变成了正数
+
+byte b=-127;
+System.out.println("不:"+Integer.valueOf(b)); // -127
+System.out.println("要:"+Integer.valueOf(b&0xff)); //129
+
+*/
+
+// 下方可以把java md5后byte数组中的负数全部转为正数：这样与OC的代码就保持一致了；
+import java.util.*;
+public class Main {
+    public static void main(String[] args) throws Exception {
+        byte[] dataMD5Byte = new byte[]{-112, -32, 2, 34, -10, -85, 98, -33, -80, -126, 52, -113, -87, -118, -39, -77};
+        int[] dataMD5ByteInteger = new int[dataMD5Byte.length];
+        for (int i = 0; i<dataMD5Byte.length; i++){
+            // 方法一：
+            dataMD5ByteInteger[i] = dataMD5Byte[i] < 0 ? (256 + dataMD5Byte[i]) :dataMD5Byte[i]; //256= 2^8
+
+            // 方法二：
+            dataMD5ByteInteger[i] = dataMD5Byte[i] & 0xFF; // 把负数转为了正数
+            // dataMD5ByteInteger[i]= (byte)(dataMD5Byte[i] & 0xFF); // 把正数转为了负数
+
+        }
+        System.out.println("dataMD5Byte = "+Arrays.toString(dataMD5Byte));
+        System.out.println("dataMD5ByteInteger = "+Arrays.toString(dataMD5ByteInteger));
+    }
+}
+
+
+
+// SHA-1
+import java.math.BigInteger;
+import java.security.MessageDigest;
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 创建一个MessageDigest实例:
+        MessageDigest md = MessageDigest.getInstance("SHA-1");// SHA-256,不同的hash算法，这儿填入不同类型即可
+        // 反复调用update输入数据:
+        md.update("Hello".getBytes("UTF-8"));
+        md.update("World".getBytes("UTF-8"));
+        byte[] result = md.digest(); // 20 bytes: db8ac1c259eb89d4a131b253bacfca5f319d54f2
+        System.out.println(new BigInteger(1, result).toString(16));
+    }
+}
+
+
+/*
+三方hash库BouncyCastle，
+官网下载bcprov-jdk15on-xxx.jar
+
+BouncyCastle是一个开源的第三方算法提供商；
+BouncyCastle提供了很多Java标准库没有提供的哈希算法和加密算法；
+使用第三方算法前需要通过Security.addProvider()注册。
+
+*/
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.Security;
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 注册BouncyCastle:
+        Security.addProvider(new BouncyCastleProvider());
+        // 按名称正常调用:
+        MessageDigest md = MessageDigest.getInstance("RipeMD160");
+        md.update("HelloWorld".getBytes("UTF-8"));
+        byte[] result = md.digest();
+        System.out.println(new BigInteger(1, result).toString(16));
+    }
+}
+
+
+
+/*
+HmacMD5 ≈ md5(secure_random_key, input)
+
+HmacMD5可以看作带有一个安全的key的MD5。使用HmacMD5而不是用MD5加salt，有如下好处：
+1. HmacMD5使用的key长度是64字节，更安全；
+2. Hmac是标准算法，同样适用于SHA-1等其他哈希算法；
+3. Hmac输出和原有的哈希算法长度一致。
+
+和MD5相比，使用HmacMD5的步骤是：
+
+通过名称HmacMD5获取KeyGenerator实例；
+通过KeyGenerator创建一个SecretKey实例；
+通过名称HmacMD5获取Mac实例；
+用SecretKey初始化Mac实例；
+对Mac实例反复调用update(byte[])输入数据；
+调用Mac实例的doFinal()获取最终的哈希值。
+*/
+
+import java.math.BigInteger;
+import javax.crypto.*;
+public class Main {
+    public static void main(String[] args) throws Exception {
+        KeyGenerator keyGen = KeyGenerator.getInstance("HmacMD5");
+        SecretKey key = keyGen.generateKey();
+
+
+        // 打印随机生成的key:
+        byte[] skey = key.getEncoded();
+        // System.out.println(Arrays.toString(skey)); // 输出是一个byte数组
+        //System.out.println(new BigInteger(1, skey).toString(16));// 16进制的值
+        
+        Mac mac = Mac.getInstance("HmacMD5");
+        mac.init(key);
+        mac.update("HelloWorld".getBytes("UTF-8"));
+        byte[] result = mac.doFinal();
+        System.out.println(Arrays.toString(result));// 输出是一个byte数组
+        System.out.println(new BigInteger(1, result).toString(16));// 16进制的值
+    }
+}
+
+// 我们可以用Hmac算法取代原有的自定义的加盐算法，因此，可以存储用户名和口令的数据库
+// 有了Hmac计算的哈希和SecretKey，我们想要验证怎么办？这时，SecretKey不能从KeyGenerator生成，而是从一个byte[]数组恢复：
+// 恢复SecretKey的语句就是new SecretKeySpec(hkey, "HmacMD5")。
+
+// 通过byteArray去还原
+import java.util.Arrays;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+public class Main {
+    public static void main(String[] args) throws Exception {
+        byte[] hKey = new byte[] { 106, 70, -110, 125, 39, -20, 52, 56, 85, 9, -19, -72, 52, -53, 52, -45, -6, 119, -63,
+                30, 20, -83, -28, 77, 98, 109, -32, -76, 121, -106, 0, -74, -107, -114, -45, 104, -104, -8, 2, 121, 6,
+                97, -18, -13, -63, -30, -125, -103, -80, -46, 113, -14, 68, 32, -46, 101, -116, -104, -81, -108, 122,
+                89, -106, -109 };
+
+        SecretKey key = new SecretKeySpec(hKey, "HmacMD5");
+        Mac mac = Mac.getInstance("HmacMD5");
+        mac.init(key);
+        mac.update("HelloWorld".getBytes("UTF-8"));
+        byte[] result = mac.doFinal();
+        System.out.println(Arrays.toString(result));
+        // [126, 59, 37, 63, 73, 90, 111, -96, -77, 15, 82, -74, 122, -55, -67, 54]
+    }
+}
+
+
+// 通过生成的hash值去还原：
+// https://www.cnblogs.com/victor2302/p/11018189.html
+import java.math.BigInteger;
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
+public class Main {
+    public static void main(String[] args) throws Exception {
+        KeyGenerator keyGen = KeyGenerator.getInstance("HmacMD5");
+        SecretKey key = keyGen.generateKey();
+
+        // 把key转为16进制数输出并记录:
+        byte[] keyByteArray = key.getEncoded();
+        String macMd5Res = new BigInteger(1, keyByteArray).toString(16);//参数1表示为正数
+
+        // 通过记录的16位hash数来还原key
+        byte[] keyByteArray1 = new BigInteger(macMd5Res, 16).toByteArray();
+        // 因为前面是正数BigInteger,会有符号位,去除第一个符号位0,还原得到真正原始数组
+        if (keyByteArray1[0]==0) {
+            byte[] temArray = new byte[keyByteArray1.length - 1];
+            System.arraycopy(keyByteArray1, 1, temArray, 0, temArray.length);
+            keyByteArray1 = temArray;
+        }
+        SecretKey key1 = new SecretKeySpec(keyByteArray1, "HmacMD5");// 此方法只能通过keyByte数组来还原key
+
+        System.out.println(key.equals(key1)); //true
+
+        Mac mac = Mac.getInstance("HmacMD5");
+        mac.init(key);
+        mac.update("HelloWorld".getBytes("UTF-8"));
+        byte[] result = mac.doFinal();
+        System.out.println(new BigInteger(1, result).toString(16));
+
+        Mac mac1 = Mac.getInstance("HmacMD5");
+        mac1.init(key1);
+        mac1.update("HelloWorld".getBytes("UTF-8"));
+        byte[] result1 = mac1.doFinal();
+        System.out.println(new BigInteger(1, result1).toString(16));
+    }
+}
+
+
+/*
+对称加密算法：
+-------------
+常用的对称加密算法有：
+
+算法        密钥长度            工作模式             填充模式
+DES         56/64        ECB/CBC/PCBC/CTR/...    NoPadding/PKCS5Padding/...
+AES       128/192/256    ECB/CBC/PCBC/CTR/...    NoPadding/PKCS5Padding/PKCS7Padding/...
+IDEA        128            ECB                   PKCS5Padding/PKCS7Padding/...
+
+
+密钥长度直接决定加密强度，而工作模式和填充模式可以看成是对称加密算法的参数和格式选择。
+DES算法由于密钥过短，可以在短时间内被暴力破解，所以现在已经不安全了。
+
+
+secret = encrypt(key, message);
+
+plain = decrypt(key, secret);
+*/
+
+
+/*
+Java标准库提供的对称加密接口非常简单，使用时按以下步骤编写代码：
+
+根据算法名称/工作模式/填充模式获取Cipher实例；
+根据算法名称初始化一个SecretKey实例，密钥必须是指定长度；
+使用SerectKey初始化Cipher实例，并设置加密或解密模式；
+传入明文或密文，获得密文或明文
+*/ 
+
+// AES算法是目前应用最广泛的加密算法。我们先用ECB模式加密并解密
+import java.security.*;
+import java.util.Base64;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 原文:
+        String message = "Hello, world!";
+        System.out.println("Message: " + message);
+        // 128位密钥 = 16 bytes Key:
+        byte[] key = "1234567890abcdef".getBytes("UTF-8");
+        // 加密:
+        byte[] data = message.getBytes("UTF-8");
+        byte[] encrypted = encrypt(key, data);
+        System.out.println("Encrypted: " + Base64.getEncoder().encodeToString(encrypted));
+        // 解密:
+        byte[] decrypted = decrypt(key, encrypted);
+        System.out.println("Decrypted: " + new String(decrypted, "UTF-8"));
+    }
+
+    // 加密:
+    public static byte[] encrypt(byte[] key, byte[] input) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+        SecretKey keySpec = new SecretKeySpec(key, "AES");
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec);
+        return cipher.doFinal(input);
+    }
+
+    // 解密:
+    public static byte[] decrypt(byte[] key, byte[] input) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+        SecretKey keySpec = new SecretKeySpec(key, "AES");
+        cipher.init(Cipher.DECRYPT_MODE, keySpec);
+        return cipher.doFinal(input);
+    }
+}
+
+/*
+ECB模式是最简单的AES加密模式，它只需要一个固定长度的密钥，固定的明文会生成固定的密文，这种一对一的加密方式会导致安全性降低，更好的方式是通过CBC模式，它需要一个随机数作为IV参数，这样对于同一份明文，每次生成的密文都不同：
+
+在CBC模式下，需要一个随机生成的16字节IV参数，必须使用SecureRandom生成。因为多了一个IvParameterSpec实例，因此，初始化方法需要调用Cipher的一个重载方法并传入IvParameterSpec。
+
+观察输出，可以发现每次生成的IV不同，密文也不同。
+*/
+
+// AES - CBC
+import java.security.*;
+import java.util.Base64;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 原文:
+        String message = "Hello, world!";
+        System.out.println("Message: " + message);
+        // 256位密钥 = 32 bytes Key:
+        byte[] key = "1234567890abcdef1234567890abcdef".getBytes("UTF-8");
+        // 加密:
+        byte[] data = message.getBytes("UTF-8");
+        byte[] encrypted = encrypt(key, data);
+        System.out.println("Encrypted: " + Base64.getEncoder().encodeToString(encrypted));
+        // 解密:
+        byte[] decrypted = decrypt(key, encrypted);
+        System.out.println("Decrypted: " + new String(decrypted, "UTF-8"));
+    }
+
+    // 加密:
+    public static byte[] encrypt(byte[] key, byte[] input) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+        // CBC模式需要生成一个16 bytes的initialization vector:
+        SecureRandom sr = SecureRandom.getInstanceStrong();
+        byte[] iv = sr.generateSeed(16);
+        IvParameterSpec ivps = new IvParameterSpec(iv);
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivps);
+        byte[] data = cipher.doFinal(input);
+        // IV不需要保密，把IV和密文一起返回:
+        return join(iv, data);
+    }
+
+    // 解密:
+    public static byte[] decrypt(byte[] key, byte[] input) throws GeneralSecurityException {
+        // 把input分割成IV和密文:
+        byte[] iv = new byte[16];
+        byte[] data = new byte[input.length - 16];
+        System.arraycopy(input, 0, iv, 0, 16);
+        System.arraycopy(input, 16, data, 0, data.length);
+        // 解密:
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec ivps = new IvParameterSpec(iv);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivps);
+        return cipher.doFinal(data);
+    }
+
+    public static byte[] join(byte[] bs1, byte[] bs2) {
+        byte[] r = new byte[bs1.length + bs2.length];
+        System.arraycopy(bs1, 0, r, 0, bs1.length);
+        System.arraycopy(bs2, 0, r, bs1.length, bs2.length);
+        return r;
+    }
+}
+
+
+/*
+口令加密算法：
+------------
+
+PBE算法，采用随机数和用户的输入杂凑计算出真正的密钥，再进行加密。
+key = generate(userPassword, secureRandomPassword);
+
+使用PBE时，我们还需要引入BouncyCastle，并指定算法是PBEwithSHA1and128bitAES-CBC-BC。
+观察代码，实际上真正的AES密钥是调用Cipher的init()方法时同时传入SecretKey和PBEParameterSpec实现的。
+在创建PBEParameterSpec的时候，我们还指定了循环次数1000，循环次数越多，暴力破解需要的计算量就越大。
+
+如果我们把salt和循环次数固定，就得到了一个通用的“口令”加密软件。如果我们把随机生成的salt存储在U盘，就得到了一个“口令”加USB Key的加密软件，它的好处在于，即使用户使用了一个非常弱的口令，没有USB Key仍然无法解密，因为USB Key存储的随机数密钥安全性非常高。
+*/
+
+import java.security.*;
+import java.util.Base64;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.math.BigInteger;
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 把BouncyCastle作为Provider添加到java.security:
+        Security.addProvider(new BouncyCastleProvider());
+        // 原文:
+        String message = "Hello, world!";
+        // 加密口令:
+        String password = "hello12345";
+        // 16 bytes随机Salt:
+        byte[] salt = SecureRandom.getInstanceStrong().generateSeed(16);
+        System.out.printf("salt: %032x\n", new BigInteger(1, salt));
+        // 加密:
+        byte[] data = message.getBytes("UTF-8");
+        byte[] encrypted = encrypt(password, salt, data);
+        System.out.println("encrypted: " + Base64.getEncoder().encodeToString(encrypted));
+        // 解密:
+        byte[] decrypted = decrypt(password, salt, encrypted);
+        System.out.println("decrypted: " + new String(decrypted, "UTF-8"));
+    }
+
+    // 加密:
+    public static byte[] encrypt(String password, byte[] salt, byte[] input) throws GeneralSecurityException {
+        PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray());
+        SecretKeyFactory skeyFactory = SecretKeyFactory.getInstance("PBEwithSHA1and128bitAES-CBC-BC");
+        SecretKey skey = skeyFactory.generateSecret(keySpec);
+        PBEParameterSpec pbeps = new PBEParameterSpec(salt, 1000);
+        Cipher cipher = Cipher.getInstance("PBEwithSHA1and128bitAES-CBC-BC");
+        cipher.init(Cipher.ENCRYPT_MODE, skey, pbeps);
+        return cipher.doFinal(input);
+    }
+
+    // 解密:
+    public static byte[] decrypt(String password, byte[] salt, byte[] input) throws GeneralSecurityException {
+        PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray());
+        SecretKeyFactory skeyFactory = SecretKeyFactory.getInstance("PBEwithSHA1and128bitAES-CBC-BC");
+        SecretKey skey = skeyFactory.generateSecret(keySpec);
+        PBEParameterSpec pbeps = new PBEParameterSpec(salt, 1000);
+        Cipher cipher = Cipher.getInstance("PBEwithSHA1and128bitAES-CBC-BC");
+        cipher.init(Cipher.DECRYPT_MODE, skey, pbeps);
+        return cipher.doFinal(input);
+    }
+}
+
+
+
+/*
+密钥交换算法:
+-----------
+
+即DH算法：Diffie-Hellman算法应运而生
+DH算法是一个密钥协商算法，双方最终协商出一个共同的密钥，而这个密钥不会通过网络传输。
+
+DH算法的本质就是双方各自生成自己的私钥和公钥，私钥仅对自己可见，然后交换公钥，并根据自己的私钥和对方的公钥，生成最终的密钥secretKey，DH算法通过数学定律保证了双方各自计算出的secretKey是相同的。
+
+但是DH算法并未解决中间人攻击，即甲乙双方并不能确保与自己通信的是否真的是对方。消除中间人攻击需要其他方法。
+*/
+
+
+
+import java.math.BigInteger;
+import java.security.*;
+import java.security.spec.*;
+import javax.crypto.KeyAgreement;
+
+public class Main {
+    public static void main(String[] args) {
+        // Bob和Alice:
+        Person bob = new Person("Bob");
+        Person alice = new Person("Alice");
+
+        // 各自生成KeyPair:
+        bob.generateKeyPair();
+        alice.generateKeyPair();
+
+        // 双方交换各自的PublicKey:
+        // Bob根据Alice的PublicKey生成自己的本地密钥:
+        bob.generateSecretKey(alice.publicKey.getEncoded());
+        // Alice根据Bob的PublicKey生成自己的本地密钥:
+        alice.generateSecretKey(bob.publicKey.getEncoded());
+
+        // 检查双方的本地密钥是否相同:
+        bob.printKeys();
+        alice.printKeys();
+        // 双方的SecretKey相同，后续通信将使用SecretKey作为密钥进行AES加解密...
+    }
+}
+
+class Person {
+    public final String name;
+
+    public PublicKey publicKey;
+    private PrivateKey privateKey;
+    private byte[] secretKey;
+
+    public Person(String name) {
+        this.name = name;
+    }
+
+    // 生成本地KeyPair:
+    public void generateKeyPair() {
+        try {
+            KeyPairGenerator kpGen = KeyPairGenerator.getInstance("DH");
+            kpGen.initialize(512);
+            KeyPair kp = kpGen.generateKeyPair();
+            this.privateKey = kp.getPrivate();
+            this.publicKey = kp.getPublic();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void generateSecretKey(byte[] receivedPubKeyBytes) {
+        try {
+            // 从byte[]恢复PublicKey:
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(receivedPubKeyBytes);
+            KeyFactory kf = KeyFactory.getInstance("DH");
+            PublicKey receivedPublicKey = kf.generatePublic(keySpec);
+            // 生成本地密钥:
+            KeyAgreement keyAgreement = KeyAgreement.getInstance("DH");
+            keyAgreement.init(this.privateKey); // 自己的PrivateKey
+            keyAgreement.doPhase(receivedPublicKey, true); // 对方的PublicKey
+            // 生成SecretKey密钥:
+            this.secretKey = keyAgreement.generateSecret();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void printKeys() {
+        System.out.printf("Name: %s\n", this.name);
+        System.out.printf("Private key: %x\n", new BigInteger(1, this.privateKey.getEncoded()));
+        System.out.printf("Public key: %x\n", new BigInteger(1, this.publicKey.getEncoded()));
+        System.out.printf("Secret key: %x\n", new BigInteger(1, this.secretKey));
+    }
+}
+
+
+/*
+非对称加密算法:
+-------------
+典型算法就是RSA算法
+
+优点：相比对称加密，每个人管理的秘钥数比较少，不容易泄漏，可以公开各自的公钥，不需要协商秘钥。
+缺点：运算速度非常慢。
+
+
+在实际应用的时候，非对称加密总是和对称加密一起使用。假设小明需要给小红需要传输加密文件，他俩首先交换了各自的公钥，然后：
+
+小明生成一个随机的AES口令，然后用小红的公钥通过RSA加密这个口令，并发给小红；
+小红用自己的RSA私钥解密得到AES口令；
+双方使用这个共享的AES口令用AES加密通信。
+
+可见非对称加密实际上应用在第一步，即加密“AES口令”。这也是我们在浏览器中常用的HTTPS协议的做法，即浏览器和服务器先通过RSA交换AES口令，接下来双方通信实际上采用的是速度较快的AES对称加密，而不是缓慢的RSA非对称加密。
+
+以RSA算法为例，它的密钥有256/512/1024/2048/4096等不同的长度。长度越长，密码强度越大，当然计算速度也越慢。
+如果修改待加密的byte[]数据的大小，可以发现，使用512bit的RSA加密时，明文长度不能超过53字节，使用1024bit的RSA加密时，明文长度不能超过117字节，这也是为什么使用RSA的时候，总是配合AES一起使用，即用AES加密任意长度的明文，用RSA加密AES口令。
+此外，只使用非对称加密算法不能防止中间人攻击。
+*/
+
+// java标准库提供了RSA算法的实现，示例代码如下：
+
+import java.math.BigInteger;
+import java.security.*;
+import javax.crypto.Cipher;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 明文:
+        byte[] plain = "Hello, encrypt use RSA".getBytes("UTF-8");
+        // 创建公钥／私钥对:
+        Person alice = new Person("Alice");
+        // 用Alice的公钥加密:
+        byte[] pk = alice.getPublicKey();
+        System.out.println(String.format("public key: %x", new BigInteger(1, pk)));
+        byte[] encrypted = alice.encrypt(plain);
+        System.out.println(String.format("encrypted: %x", new BigInteger(1, encrypted)));
+        // 用Alice的私钥解密:
+        byte[] sk = alice.getPrivateKey();
+        System.out.println(String.format("private key: %x", new BigInteger(1, sk)));
+        byte[] decrypted = alice.decrypt(encrypted);
+        System.out.println(new String(decrypted, "UTF-8"));
+    }
+}
+
+class Person {
+    String name;
+    // 私钥:
+    PrivateKey sk;
+    // 公钥:
+    PublicKey pk;
+
+    public Person(String name) throws GeneralSecurityException {
+        this.name = name;
+        // 生成公钥／私钥对:
+        KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA");
+        kpGen.initialize(1024);
+        KeyPair kp = kpGen.generateKeyPair();
+        this.sk = kp.getPrivate();
+        this.pk = kp.getPublic();
+    }
+
+    // 把私钥导出为字节
+    public byte[] getPrivateKey() {
+        return this.sk.getEncoded();
+    }
+
+    // 把公钥导出为字节
+    public byte[] getPublicKey() {
+        return this.pk.getEncoded();
+    }
+
+    // 用公钥加密:
+    public byte[] encrypt(byte[] message) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, this.pk);
+        return cipher.doFinal(message);
+    }
+
+    // 用私钥解密:
+    public byte[] decrypt(byte[] input) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, this.sk);
+        return cipher.doFinal(input);
+    }
+}
+
+
+/*
+签名算法:
+
+私钥加密得到的密文实际上就是数字签名,然后用公钥解密
+signature = encrypt(privateKey, sha256(message))
+hash = decrypt(publicKey, signature)
+
+常用数字签名算法有：
+MD5withRSA
+SHA1withRSA
+SHA256withRSA
+*/
+
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+
+public class Main {
+    public static void main(String[] args) throws GeneralSecurityException {
+        // 生成RSA公钥/私钥:
+        KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA");
+        kpGen.initialize(1024);
+        KeyPair kp = kpGen.generateKeyPair();
+        PrivateKey sk = kp.getPrivate();
+        PublicKey pk = kp.getPublic();
+
+        // 待签名的消息:
+        byte[] message = "Hello, I am Bob!".getBytes(StandardCharsets.UTF_8);
+
+        // 用私钥签名:
+        Signature s = Signature.getInstance("SHA1withRSA");
+        s.initSign(sk);
+        s.update(message);
+        byte[] signed = s.sign();
+        System.out.println(String.format("signature: %x", new BigInteger(1, signed)));
+
+        // 用公钥验证:
+        Signature v = Signature.getInstance("SHA1withRSA");
+        v.initVerify(pk);
+        v.update(message);
+        boolean valid = v.verify(signed);
+        System.out.println("valid? " + valid);
+    }
+}
+
+/*
+DSA签名
+除了RSA可以签名外，还可以使用DSA算法进行签名。DSA是Digital Signature Algorithm的缩写，它使用ElGamal数字签名算法。
+
+DSA只能配合SHA使用，常用的算法有：
+
+SHA1withDSA
+SHA256withDSA
+SHA512withDSA
+和RSA数字签名相比，DSA的优点是更快。
+
+ECDSA签名
+椭圆曲线签名算法ECDSA：Elliptic Curve Digital Signature Algorithm也是一种常用的签名算法，它的特点是可以从私钥推出公钥。
+比特币的签名算法就采用了ECDSA算法，使用标准椭圆曲线secp256k1。BouncyCastle提供了ECDSA的完整实现。
+*/
+
+
+/*
+数字证书:
+
+数字证书就是集合了多种密码学算法，用于实现数据加解密、身份认证、签名等多种功能的一种安全标准。
+数字证书采用链式签名管理，顶级的Root CA证书已内置在操作系统中。
+数字证书存储的是公钥，可以安全公开，而私钥必须严格保密。
+
+*/
+
+
+// 日期：
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws ParseException {
+        SimpleDateFormat dataFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date oldDate = dataFormat.parse("19700101080000");
+        System.out.println(oldDate);
+
+        Date dateNow = new Date();
+        String dateNowString = dataFormat.format(new Date());
+        System.out.println(dateNowString);
+        
+        long between = dateNow.getTime() - oldDate.getTime(); // seconds
+        System.out.println(between);
+        System.out.println(dateNow.getTime());
+        System.out.println(dateNow.getTime() == between); // true
+    }
+}
+
+
+
+/*
+Maven:
+------
+a-maven-project
+├── pom.xml
+├── src
+│   ├── main
+│   │   ├── java
+│   │   └── resources
+│   └── test
+│       ├── java
+│       └── resources
+└── target
+
+Maven使用pom.xml定义项目内容，并使用预设的目录结构；
+在Maven中声明一个依赖项可以自动下载并导入classpath；
+Maven使用groupId，artifactId和version唯一定位一个依赖。
+
+<project ...>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.itranswarp.learnjava</groupId>
+    <artifactId>hello</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+    <properties>
+        ...
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+    </dependencies>
+</project>
+
+
+//依赖关系：
+scope       说明                                         示例
+compile     编译时需要用到该jar包（默认）                  commons-logging
+test        编译Test时需要用到该jar包                     junit
+runtime     编译时不需要，但运行时需要用到                  mysql
+provided    编译时需要用到，但运行时由JDK或某个服务器提供    servlet-api
+
+注：只有以-SNAPSHOT结尾的版本号会被Maven视为开发版本，开发版本每次都会重复下载，这种SNAPSHOT版本只能用于内部私有的Maven repo，公开发布的版本不允许出现SNAPSHOT。
+
+一个jar包一旦被下载过，就会被Maven自动缓存在本地目录（用户主目录的.m2目录）
+
+使用Maven镜像仓库需要一个配置，在用户主目录下进入.m2目录，创建一个settings.xml配置文件，内容如下：
+<settings>
+    <mirrors>
+        <mirror>
+            <id>aliyun</id>
+            <name>aliyun</name>
+            <mirrorOf>central</mirrorOf>
+            <!-- 国内推荐阿里云的Maven镜像 -->
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </mirror>
+    </mirrors>
+</settings>
+
+
+搜索第三方组件：
+比如okhttp，如何确切地获得它的groupId、artifactId和version？
+方法是通过search.maven.org搜索关键字，找到对应的组件后，直接复制
+
+
+命令行编译:
+在命令中，进入到pom.xml所在目录，输入以下命令：
+$ mvn clean package
+如果一切顺利，即可在target目录下获得编译后自动打包的jar。
+
+
+在Eclipse中，可以直接创建或导入Maven项目。
+如果导入后的Maven项目有错误，可以尝试选择项目后点击右键，选择Maven - Update Project...更新：
+
+
+构建流程：
+可以自动化实现编译，打包，发布，等等
+
+Maven的生命周期由一系列阶段（phase）构成，以内置的生命周期default为例，它包含以下phase：
+
+validate
+initialize
+generate-sources
+process-sources
+generate-resources
+process-resources
+compile
+process-classes
+generate-test-sources
+process-test-sources
+generate-test-resources
+process-test-resources
+test-compile
+process-test-classes
+test
+prepare-package
+package
+pre-integration-test
+integration-test
+post-integration-test
+verify
+install
+deploy
+
+如果我们运行mvn package，Maven就会执行default生命周期，它会从开始一直运行到package这个phase为止：
+validate
+...
+package
+
+如果我们运行mvn compile，Maven也会执行default生命周期，但这次它只会运行到compile，即以下几个phase：
+validate
+...
+compile
+
+Maven另一个常用的生命周期是clean，它会执行3个phase：
+pre-clean
+clean （注意这个clean不是lifecycle而是phase）
+post-clean
+
+所以，我们使用mvn这个命令时，后面的参数是phase，Maven自动根据生命周期运行到指定的phase。
+
+在实际开发过程中，经常使用的命令有：
+mvn clean：清理所有生成的class和jar；
+mvn clean compile：先清理，再执行到compile；
+mvn clean test：先清理，再执行到test，因为执行test前必须执行compile，所以这里不必指定compile；
+mvn clean package：先清理，再执行到package。
+
+大多数phase在执行过程中，因为我们通常没有在pom.xml中配置相关的设置，所以这些phase什么事情都不做。
+
+经常用到的phase其实只有几个：
+clean：清理
+compile：编译
+test：运行测试
+package：打包
+
+执行一个phase又会触发一个或多个goal：
+
+lifecycle相当于Java的package，它包含一个或多个phase；
+phase相当于Java的class，它包含一个或多个goal；
+goal相当于class的method，它其实才是真正干活的。
+
+大多数情况，我们只要指定phase，就默认执行这些phase默认绑定的goal，只有少数情况，我们可以直接指定运行一个goal，例如，启动Tomcat服务器：
+mvn tomcat:run
+
+下面列举了一些常用的插件：
+maven-shade-plugin：打包所有依赖包并生成可执行jar；
+cobertura-maven-plugin：生成单元测试覆盖率报告；
+findbugs-maven-plugin：对Java源码进行静态分析以找出潜在问题。
+
+其他：
+1.如何用pom.xml管理多个模块
+2.如何指定maven版本
+3.如何发布自己的maven
+*/
+
+
+/*
+进程（Process）和线程(Thread)：
+----------------------------
+
+一个进程可以包含一个或多个线程，但至少会有一个线程。
+操作系统调度的最小任务单位其实不是进程，而是线程。
+
+
+进程VS线程：
+和多线程相比，多进程的缺点在于：
+创建进程比创建线程开销大，尤其是在Windows系统上；
+进程间通信比线程间通信要慢，因为线程间通信就是读写同一个变量，速度很快。
+而多进程的优点在于：
+
+多进程稳定性比多线程高，因为在多进程的情况下，一个进程崩溃不会影响其他进程，而在多线程的情况下，任何一个线程崩溃会直接导致整个进程崩溃。
+
+
+Java语言内置了多线程支持：一个Java程序实际上是一个JVM进程，JVM进程用一个主线程来执行main()方法，在main()方法内部，我们又可以启动多个线程。此外，JVM还有负责垃圾回收的其他工作线程等。
+
+因此，对于大多数Java程序来说，我们说多任务，实际上是说如何使用多线程实现多任务。
+*/
+
+
+
+/*
+创建新线程:
+
+Java用Thread对象表示一个线程，通过调用start()启动一个新线程；
+一个线程对象只能调用一次start()方法；
+线程的执行代码写在run()方法中；
+线程调度由操作系统决定，程序本身无法决定调度顺序；
+Thread.sleep()可以把当前线程暂停一段时间。
+*/ 
+
+// 创建线程的时候，可以传入线程名
+Web12306 web = new Web12306();
+Thread proxy1 = new Thread(web, "黄牛");
+Thread proxy2 = new Thread(web, "程序员");
+/*
+获取线程名：
+不传入线程名，则默认：
+main:
+Thread-0:
+Thread-1:
+*/ 
+Thread.currentThread().getName()
+
+
+// 方法一：从Thread派生一个自定义类，然后覆写run()方法：
+public class Main {
+    public static void main(String[] args) {
+        Thread t = new MyThread();
+        t.start(); // 启动新线程, start()会自动调用run()方法，
+        // 直接调用run()方法是无效的，即：t.run()
+    }
+}
+
+class MyThread extends Thread {
+    @Override
+    public void run() {
+        System.out.println("start new thread!");
+    }
+}
+
+// 方法二：创建Thread实例时，传入一个Runnable实例：
+public class Main {
+    public static void main(String[] args) {
+        Thread t = new Thread(new MyRunnable());
+        t.start(); // 启动新线程
+    }
+}
+
+class MyRunnable implements Runnable { //这儿是一个接口
+    @Override
+    public void run() {
+        System.out.println("start new thread!");
+    }
+}
+
+// 方法三： lambda表达式简写：
+public class Main {
+    public static void main(String[] args) {
+        Thread t = new Thread(() -> {
+            System.out.println("start new thread!");
+        });
+        t.start(); // 启动新线程
+    }
+}
+
+
+// 在线程中调用Thread.sleep()，强迫当前线程暂停一段时间：
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("main start...");
+        Thread t = new Thread() {
+            public void run() {
+                System.out.println("thread run...");
+                try {
+                    Thread.sleep(10); //sleep()传入的参数是毫秒
+                } catch (InterruptedException e) {}
+                System.out.println("thread end.");
+            }
+        };
+        t.start();
+        try {
+            Thread.sleep(20);
+        } catch (InterruptedException e) {}
+        System.out.println("main end...");
+    }
+}
+
+
+// 可以对线程设定优先级，设定优先级的方法是：
+// 但 不能通过设置优先级来确保高优先级的线程一定会先执行。
+Thread.setPriority(int n) // 1~10, 默认值5
+
+
+/*
+线程状态：
+----------
+
+New：新创建的线程，尚未执行；
+|
+Runnable：运行中的线程，正在执行run()方法的Java代码；
+Blocked：运行中的线程，因为某些操作被阻塞而挂起；
+Waiting：运行中的线程，因为某些操作在等待中；
+Timed Waiting：运行中的线程，因为执行sleep()方法正在计时等待；
+|
+Terminated：线程已终止，因为run()方法执行完毕。
+
+
+线程终止的原因有：
+
+线程正常终止：run()方法执行到return语句返回；
+线程意外终止：run()方法因为未捕获的异常导致线程终止；
+对某个线程的Thread实例调用stop()方法强制终止（强烈不推荐使用）。
+
+*/ 
+
+// 可以通过t.join()等待t线程结束后再继续运行
+
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        Thread t = new Thread(() -> {
+            System.out.println("hello");
+        });
+        System.out.println("start");
+        t.start();
+        t.join(); // 等待t结束，这儿可以制定等待时间。对已经运行结束的线程调用join()方法会立刻返回。
+        System.out.println("end");
+    }
+}
+// start
+// hello
+// end
+
+
+
+/*
+线程中断：
+
+调用目标线程的.interrupt()可以中断线程
+对线程调用.isInterrupted()可以判断是否被中断了
+目标线程检测到isInterrupted()为true或者捕获了InterruptedException都应该立刻结束自身线程；
+
+还有一种设置标志位，可以中断线程
+*/
+
+//interrupt
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        Thread t = new MyThread();
+        t.start();
+        Thread.sleep(1000);
+        t.interrupt(); // 中断t线程
+        t.join(); // 等待t线程结束
+        System.out.println("end");
+    }
+}
+
+class MyThread extends Thread {
+    public void run() {
+        Thread hello = new HelloThread();
+        hello.start(); // 启动hello线程
+        try {
+            hello.join(); // 等待hello线程结束
+        } catch (InterruptedException e) {
+            System.out.println("interrupted!");
+        } finally {
+            hello.interrupt();
+        }
+    }
+}
+
+class HelloThread extends Thread {
+    public void run() {
+        int n = 0;
+        while (!isInterrupted()) {
+            n++;
+            System.out.println(n + " hello!");
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+    }
+}
+
+//设置标志位flag来进行中断:
+/*
+volatile关键字的目的是告诉虚拟机：
+
+每次访问变量时，总是获取主内存的最新值；
+每次修改变量后，立刻回写到主内存。
+*/
+
+public class Main {
+    public static void main(String[] args)  throws InterruptedException {
+        HelloThread t = new HelloThread();
+        t.start();
+        Thread.sleep(1);
+        t.running = false; // 标志位置为false
+    }
+}
+
+class HelloThread extends Thread {
+    public volatile boolean running = true; // 线程间共享变量需要使用volatile关键字标记
+    public void run() {
+        int n = 0;
+        while (running) {
+            n ++;
+            System.out.println(n + " hello!");
+        }
+        System.out.println("end!");
+    }
+}
+
+/*
+守护线程：
+-----------
+Daemon Thread
+
+守护线程是指为其他线程服务的线程。
+在JVM中，所有非守护线程都执行完毕后，无论有没有守护线程，虚拟机都会自动退出。
+
+在调用start()方法前，调用setDaemon(true)可以把该线程标记为守护线程：
+
+在守护线程中，编写代码要注意：守护线程不能持有任何需要关闭的资源，
+例如打开文件等，因为虚拟机退出时，守护线程没有任何机会来关闭文件，这会导致数据丢失。
+*/
+
+// 创建守护线程：标记为守护线程，相当于它是一个后台线程，main结束后，JVM也就结束了，
+Thread t = new MyThread();
+t.setDaemon(true);
+t.start();
+
+//下面这个，没有标记为守护线程，那么main结束后，t并没有结束，JVM也不会退出。
+package com.tcp;
+import java.time.LocalTime;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        var t = new TimerThread();
+        t.start();
+    }
+}
+
+class TimerThread extends Thread {
+    @Override
+    public void run() {
+        while (true) {
+            System.out.println(LocalTime.now());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+    }
+}
+
+/*
+线程同步：
+
+加锁和解锁之间的代码块我们称之为临界区（Critical Section），任何时候临界区最多只有一个线程能执行。
+Java程序使用synchronized关键字对一个对象进行加锁：
+synchronized(lock) {
+    n = n + 1;
+}
+
+synchronized(Counter.lock) { // 获取锁
+    ...
+} // 释放锁
+
+如何使用synchronized：
+找出修改共享变量的线程代码块；
+选择一个共享实例作为锁；
+使用synchronized(lockObject) { ... }。
+
+
+多线程同时读写共享变量时，会造成逻辑错误，因此需要通过synchronized同步；
+同步的本质就是给指定对象加锁，加锁后才能继续执行后续代码；
+注意加锁对象必须是同一个实例；
+
+对JVM定义的单个原子操作不需要同步：
+long和double是64位数据，JVM没有明确规定64位赋值操作是不是一个原子操作，不过在x64平台的JVM是把long和double的赋值作为原子操作实现的。
+*/
+
+
+// 单个锁：
+public class Main {
+    public static void main(String[] args) throws Exception {
+        var add = new AddThread();
+        var dec = new DecThread();
+        add.start();
+        dec.start();
+        add.join();
+        dec.join();
+        System.out.println(Counter.count);
+    }
+}
+
+class Counter {
+    public static final Object lock = new Object();
+    public static int count = 0;
+}
+
+class AddThread extends Thread {
+    public void run() {
+        for (int i=0; i<10000; i++) {
+            synchronized(Counter.lock) {
+                Counter.count += 1;
+            }
+        }
+    }
+}
+
+class DecThread extends Thread {
+    public void run() {
+        for (int i=0; i<10000; i++) {
+            synchronized(Counter.lock) {
+                Counter.count -= 1;
+            }
+        }
+    }
+}
+
+
+// 可以并行进行的就不用加锁，需要读取同一个对象的，才加锁！下面例子为两个锁
+public class Main {
+    public static void main(String[] args) throws Exception {
+        var ts = new Thread[] { new AddStudentThread(), new DecStudentThread(), new AddTeacherThread(), new DecTeacherThread() };
+        for (var t : ts) {
+            t.start();
+        }
+        for (var t : ts) {
+            t.join();
+        }
+        System.out.println(Counter.studentCount);
+        System.out.println(Counter.teacherCount);
+    }
+}
+
+class Counter {
+    public static final Object lockStudent = new Object();
+    public static final Object lockTeacher = new Object();
+    public static int studentCount = 0;
+    public static int teacherCount = 0;
+}
+
+class AddStudentThread extends Thread {
+    public void run() {
+        for (int i=0; i<10000; i++) {
+            synchronized(Counter.lockStudent) {
+                Counter.studentCount += 1;
+            }
+        }
+    }
+}
+
+class DecStudentThread extends Thread {
+    public void run() {
+        for (int i=0; i<10000; i++) {
+            synchronized(Counter.lockStudent) {
+                Counter.studentCount -= 1;
+            }
+        }
+    }
+}
+
+class AddTeacherThread extends Thread {
+    public void run() {
+        for (int i=0; i<10000; i++) {
+            synchronized(Counter.lockTeacher) {
+                Counter.teacherCount += 1;
+            }
+        }
+    }
+}
+
+class DecTeacherThread extends Thread {
+    public void run() {
+        for (int i=0; i<10000; i++) {
+            synchronized(Counter.lockTeacher) {
+                Counter.teacherCount -= 1;
+            }
+        }
+    }
+}
+
+
+/*
+同步方法：
+---------
+用synchronized修饰方法可以把整个方法变为同步代码块，synchronized方法加锁对象是this；
+通过合理的设计和数据封装可以让一个类变为“线程安全”；
+一个类没有特殊说明，默认不是thread-safe；
+*/
+
+
+// synchronized封装：
+public class Main {
+    public static void main(String[] args) throws Exception {
+        var c1 = new Counter();
+        var c2 = new Counter();
+
+        new Thread(() -> c1.add(1)).start();
+        new Thread(() -> c1.dec(1)).start();
+
+        new Thread(() -> c2.add(1)).start();
+        new Thread(() -> c2.dec(1)).start();
+
+        System.out.println(c1.get()); //这儿读取状态，线程不一定结束了
+        System.out.println(c2.get());
+        /*执行结果为0，1或者 0，0等，
+        同步只保证多线程执行的synchronized块是依次执行，最终状态对不对还取决于你的逻辑。*/
+    }
+}
+class Counter {
+    private int count = 0;
+
+    // 下面两种写法等价
+    /*
+    public void add(int n) {
+        synchronized(this) { //锁住this,当前对象
+            count += n;
+        } //解锁
+    }
+    * */
+    public synchronized void add(int n) { // 锁住this
+        count += n;
+    } // 解锁
+
+    /*
+    public void dec(int n) {
+        synchronized(this) {
+            count -= n;
+        }
+    }
+    * */
+    public synchronized void dec(int n) {
+        count -= n;
+    }
+
+    public int get() {
+        return count; //因为读取一个变量，不需要同步，如果这儿读取两个变量，就需要同步加锁了。
+    }
+
+    public synchronized static void test(int n) {
+    }
+    /*
+    对于静态方法，锁住的是该类的Class实例，相当于:
+    public static void test1(int n) {
+        synchronized (Counter.class){ // 锁住类Class
+        }
+    }
+    * */
+}
+
+
+/*
+上面的Counter类就是线程安全的。Java标准库的java.lang.StringBuffer也是线程安全的。
+
+还有一些不变类，例如String，Integer，LocalDate，它们的所有成员变量都是final，多线程同时访问时只能读不能写，这些不变类也是线程安全的。
+
+最后，类似Math这些只提供静态方法，没有成员变量的类，也是线程安全的。
+
+除了上述几种少数情况，大部分类，例如ArrayList，都是非线程安全的类，我们不能在多线程中修改它们。但是，如果所有线程都只读取，不写入，那么ArrayList是可以安全地在线程间共享的。
+*/
+
+
+/*
+重入锁:
+JVM允许同一个线程重复获取同一个锁，这种能被同一个线程反复获取的锁
+*/
+public class Counter {
+    private int count = 0;
+
+    public synchronized void add(int n) {
+        if (n < 0) {
+            dec(-n);
+        } else {
+            count += n;
+        }
+    }
+
+    public synchronized void dec(int n) {
+        count += n;
+    }
+}
+
+/*
+死锁：
+两个线程不能获取同一个锁多次
+
+线程1和线程2如果分别执行add()和dec()方法时
+线程1：进入add()，获得lockA；
+线程2：进入dec()，获得lockB。
+随后：
+线程1：准备获得lockB，失败，等待中；
+线程2：准备获得lockA，失败，等待中。
+*/
+public void add(int m) {
+    synchronized(lockA) { // 获得lockA的锁
+        this.value += m;
+        synchronized(lockB) { // 获得lockB的锁
+            this.another += m;
+        } // 释放lockB的锁
+    } // 释放lockA的锁
+}
+
+public void dec(int m) {
+    synchronized(lockB) { // 获得lockB的锁
+        this.another -= m;
+        synchronized(lockA) { // 获得lockA的锁
+            this.value -= m;
+        } // 释放lockA的锁
+    } // 释放lockB的锁
+}
+
+/*如何避免死锁？
+线程获取锁的顺序要一致。即严格按照先获取lockA，再获取lockB的顺序，改写dec()方法如下：
+*/
+public void dec(int m) {
+    synchronized(lockA) { // 获得lockA的锁
+        this.value -= m;
+        synchronized(lockB) { // 获得lockB的锁
+            this.another -= m;
+        } // 释放lockB的锁
+    } // 释放lockA的锁
+}
+
+
+/*
+wait()
+notify()
+*/
+package com.tcp;
+
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        // 新建TaskQueue实例对象
+        var q = new TaskQueue();
+        // 存放线程的数组
+        var ts = new ArrayList<Thread>();
+        // 开启并运行5个线程，每个线程都尝试打印q中的task
+        for (int i = 0; i < 5; i++) {
+            /* 等价于：
+             var t = new Thread() {
+                public void run() {  */
+            var t = new Thread(() -> {
+                // 执行task:
+                while (true) {
+                    try {
+                        String s = q.getTask();
+                        System.out.println("execute task: " + s);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            });
+            t.start();
+            ts.add(t);
+        }
+        // 新建add线程，在线程中，每隔100ms，往q中添加一个String
+        var add = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                // 放入task:
+                String s = "t-" + Math.random();
+                System.out.println("add task " + i + ": " + s);
+                q.addTask(s);
+                // 这里每次往q中添加一个String后暂停100ms的原因是为了让上述5个线程中的某一个能够及时捕捉到，并打印
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+            }
+        });
+        add.start();
+        // 这里是main线程等待add线程执行完毕，但是for循环创建的5个线程是在一直运行中的
+        add.join();
+        // 主线程暂停100ms,目的是留出一点时间，让上述5个线程能够将q中的String全部get出来
+        // 然后再对所有的 提出中断请求
+        Thread.sleep(100);
+        for (var t : ts) {
+            t.interrupt();
+        }
+    }
+}
+
+class TaskQueue {
+    Queue<String> queue = new LinkedList<>();
+
+    public synchronized void addTask(String s) {
+        this.queue.add(s);
+        this.notifyAll(); // 使用.notify(),notifyAll()唤醒其他线程
+    }
+
+    public synchronized String getTask() throws InterruptedException {
+        while (queue.isEmpty()) {
+            this.wait(); // wait()释放锁，然后进入等待状态，当notify之后，又重新获取锁
+        }
+        return queue.remove();
+    }
+}
+
+
+/*
+ReentrantLock:
+---------------
+从Java 5开始，引入了一个高级的处理并发的java.util.concurrent包，它提供了大量更高级的并发功能，能大大简化多线程程序的编写。
+java.util.concurrent.locks包提供的ReentrantLock用于替代synchronized加锁
+*/
+
+// 使用synchronized加锁
+public class Counter {
+    private int count;
+
+    public void add(int n) {
+        synchronized(this) {
+            count += n;
+        }
+    }
+}
+
+/*
+如果用ReentrantLock替代，可以把代码改造为：
+
+因为ReentrantLock是Java代码实现的锁，我们就必须先获取锁，再进入try {...}代码块, 然后在finally中正确释放锁。
+*/ 
+
+// 使用ReentrantLock加锁
+public class Counter {
+    private final Lock lock = new ReentrantLock();
+    private int count;
+
+    public void add(int n) {
+        lock.lock(); //获取锁
+        try {
+            count += n;
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+
+
+/*
+和synchronized不同的是，ReentrantLock可以尝试获取锁：//用tryLock()
+
+如果1秒后仍未获取到锁，tryLock()返回false，程序就可以做一些额外处理，而不是无限等待下去。
+所以，使用ReentrantLock比直接使用synchronized更安全，线程在tryLock()失败的时候不会导致死锁。
+*/ 
+if (lock.tryLock(1, TimeUnit.SECONDS)) {
+    try {
+        ...
+    } finally {
+        lock.unlock();
+    }
+}
+
+/*
+Condition:
+------------
+ReentrantLock使用Condition对象来实现wait和notify的功能。
+*/
+
+//上面的代码改成用rentrantLock来实现
+import java.util.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        // 新建TaskQueue实例对象
+        var q = new TaskQueue();
+        // 存放线程的数组
+        var ts = new ArrayList<Thread>();
+        // 开启并运行5个线程，每个线程都尝试打印q中的task
+        for (int i = 0; i < 5; i++) {
+            /* 等价于：
+             var t = new Thread() {
+                public void run() {  */
+            var t = new Thread(() -> {
+                // 执行task:
+                while (true) {
+                    try {
+                        String s = q.getTask();
+                        System.out.println("execute task: " + s);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            });
+            t.start();
+            ts.add(t);
+        }
+        // 新建add线程，在线程中，每隔100ms，往q中添加一个String
+        var add = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                // 放入task:
+                String s = "t-" + Math.random();
+                System.out.println("add task " + i + ": " + s);
+                q.addTask(s);
+                // 这里每次往q中添加一个String后暂停100ms的原因是为了让上述5个线程中的某一个能够及时捕捉到，并打印
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+            }
+        });
+        add.start();
+        // 这里是main线程等待add线程执行完毕，但是for循环创建的5个线程是在一直运行中的
+        add.join();
+        // 主线程暂停100ms,目的是留出一点时间，让上述5个线程能够将q中的String全部get出来
+        // 然后再对所有的 提出中断请求
+        Thread.sleep(100);
+        for (var t : ts) {
+            t.interrupt();
+        }
+    }
+}
+
+class TaskQueue {
+    private final Lock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
+    // condition提供await(), signal(), signallAll(), 对应synchronized锁对象的wait(), notify(), notifyAll()
+    private Queue<String> queue = new LinkedList<>();
+
+    public void addTask(String s) {
+        lock.lock();
+        try {
+            queue.add(s);
+            condition.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public String getTask() throws InterruptedException {
+        lock.lock();
+        try {
+            while (queue.isEmpty()) {
+                condition.await();
+            }
+            return queue.remove();
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+
+
+// 此外，和tryLock()类似，await()可以在等待指定时间后，如果还没有被其他线程通过signal()或signalAll()唤醒，可以自己醒来：
+if (condition.await(1, TimeUnit.SECOND)) {
+    // 被其他线程唤醒
+} else {
+    // 指定时间内没有被其他线程唤醒
+}
+
+/*
+ReadWriteLock:
+-------------
+一个线程写，多个线程读
+
+使用ReadWriteLock可以提高读取效率：
+ReadWriteLock只允许一个线程写入；
+ReadWriteLock允许多个线程在没有写入时同时读取；
+ReadWriteLock适合读多写少的场景。比如帖子的回复和阅读
+*/
+
+import java.util.*;
+import java.util.concurrent.locks.*;
+
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+    }
+}
+/**
+ * ReadWriteLock特点：
+ *
+ * 只允许一个线程写入（其他线程既不能写入也不能读取）；
+ * 没有写入时，多个线程允许同时读（提高性能）
+ *
+ * 缺点：线程正在读的时候，不允许写，这是一种悲观的读锁
+ * */
+class Counter {
+    private final ReadWriteLock rwlock = new ReentrantReadWriteLock();
+    private final Lock rlock = rwlock.readLock();
+    private final Lock wlock = rwlock.writeLock();
+    private int[] counts = new int[10];
+
+    public void inc(int index) {
+        wlock.lock(); // 加写锁
+        try {
+            counts[index] += 1;
+        } finally {
+            wlock.unlock(); // 释放写锁
+        }
+    }
+
+    /**
+     * 如果没有加读锁:
+     *
+     * 锁的目的不是读的数据是错的，是保证连续读逻辑上一致的：
+     *
+     * int x = obj.x;
+     * // 这里线程可能中断
+     * int y = obj.y;
+     *
+     * 假设obj的x，y是[0,1]，某个写线程修改成[2,3]，你读到的要么是[0,1]，要么是[2,3]，但是没有锁，你读到的可能是[0,3]
+     * */
+    public int[] get() {
+        rlock.lock(); // 加读锁
+        try {
+            return Arrays.copyOf(counts, counts.length);
+        } finally {
+            rlock.unlock(); // 释放读锁
+        }
+    }
+}
+
+/*
+StampedLock:
+------------
+Java 8引入；
+相对于ReadWriteLock, 读的过程中也允许获取写锁后写入。
+这样一来，我们读的数据就可能不一致，所以，需要一点额外的代码来判断读的过程中是否有写入，这种读锁是一种乐观锁。
+
+乐观锁的意思就是乐观地估计读的过程中大概率不会有写入，因此被称为乐观锁。
+反过来，悲观锁则是读的过程中拒绝有写入，也就是写入必须等待。
+显然乐观锁的并发效率更高，但一旦有小概率的写入导致读取的数据不一致，需要能检测出来，再读一遍就行。
+
+缺点： StampedLock是不可重入锁。
+
+StampedLock还提供了更复杂的将悲观读锁升级为写锁的功能，它主要使用在if-then-update的场景：即先读，如果读的数据满足条件，就返回，如果读的数据不满足条件，再尝试写。
+*/
+
+import java.util.concurrent.locks.*;
+
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+    }
+}
+
+class Point {
+    private final StampedLock stampedLock = new StampedLock();
+
+    private double x;
+    private double y;
+
+    public void move(double deltaX, double deltaY) {
+        long stamp = stampedLock.writeLock(); // 获取写锁
+        try {
+            x += deltaX;
+            y += deltaY;
+        } finally {
+            stampedLock.unlockWrite(stamp); // 释放写锁
+        }
+    }
+
+    /**
+     * 先用乐观锁读数据
+     * 如果乐观锁数据无效，则重新用悲观锁读一遍
+     */
+    public double distanceFromOrigin() {
+        // 获得一个乐观读锁，tryOptimisticRead返回的是版本号，不是锁，根本没有锁。版本号是个long.
+        long stamp = stampedLock.tryOptimisticRead(); 
+        // 注意下面两行代码不是原子操作
+        // 假设x,y = (100,200)
+        double currentX = x;
+        // 此处已读取到x=100，但x,y可能被写线程修改为(300,400)
+        double currentY = y;
+        // 此处已读取到y，如果没有写入，读取是正确的(100,200)
+        // 如果有写入，读取是错误的(100,400)
+        if (!stampedLock.validate(stamp)) { // 检查乐观读锁后是否有其他写锁发生，validata是判断版本号变了没有，如果没变，就没有写入。
+            stamp = stampedLock.readLock(); // 获取一个悲观读锁, readLock()才返回真正的读锁，必须finally中unlock
+            try {
+                currentX = x;
+                currentY = y;
+            } finally {
+                stampedLock.unlockRead(stamp); // 释放悲观读锁
+            }
+        }
+        return Math.sqrt(currentX * currentX + currentY * currentY);
+    }
+}
+
+
+/*
+线程安全集合类：
+-------------
+java.util.concurrent
+
+interface    non-thread-safe               thread-safe
+List         ArrayList                     CopyOnWriteArrayList
+Map          HashMap                       ConcurrentHashMap
+Set          HashSet / TreeSet             CopyOnWriteArraySet
+Queue        ArrayDeque / LinkedList       ArrayBlockingQueue / LinkedBlockingQueue
+Deque        ArrayDeque / LinkedList       LinkedBlockingDeque
+
+
+使用这些并发集合与使用非线程安全的集合类完全相同。我们以ConcurrentHashMap为例：
+
+Map<String, String> map = new ConcurrentHashMap<>();
+// 在不同的线程读写:
+map.put("A", "1");
+map.put("B", "2");
+map.get("A", "1");
+
+
+所有的加锁和同步逻辑都在集合内部实现，我们只关心接口即可：
+Map<String, String> map = new HashMap<>();
+改为：
+Map<String, String> map = new ConcurrentHashMap<>();
+
+
+java.util.Collections工具类还提供了一个旧的线程安全集合转换器，可以这么用：
+Map unsafeMap = new HashMap();
+Map threadSafeMap = Collections.synchronizedMap(unsafeMap);
+
+*/
+
+
+/*
+Atomic:
+-------
+使用java.util.concurrent.atomic提供的原子操作可以简化多线程编程：
+
+Atomic类是通过无锁（lock-free）的方式实现的线程安全（thread-safe）访问。它的主要原理是利用了CAS：Compare and Set。
+我们以AtomicInteger为例，它提供的主要操作有：
+
+增加值并返回新值：int addAndGet(int delta)
+加1后返回新值：int incrementAndGet()
+获取当前值：int get()
+用CAS方式设置：int compareAndSet(int expect, int update)
+
+原子操作实现了无锁的线程安全；
+适用于计数器，累加器等。
+CAS相比Synchronized，避免了锁的使用，总体性能比Synchronized高很多。
+
+
+我们利用AtomicLong可以编写一个多线程安全的全局唯一ID生成器：
+class IdGenerator {
+    AtomicLong var = new AtomicLong(0);
+
+    public long getNextId() {
+        return var.incrementAndGet();
+    }
+}
+*/
+
+
+/*
+线程池：
+------
+
+Java标准库提供了ExecutorService接口表示线程池，它的典型用法如下：
+
+// 创建固定大小的线程池:
+ExecutorService executor = Executors.newFixedThreadPool(3);
+// 提交任务:
+executor.submit(task1);
+executor.submit(task2);
+executor.submit(task3);
+executor.submit(task4);
+executor.submit(task5);
+
+因为ExecutorService只是接口，Java标准库提供的几个常用实现类有：
+
+FixedThreadPool：线程数固定的线程池；
+CachedThreadPool：线程数根据任务动态调整的线程池；
+SingleThreadExecutor：仅单线程执行的线程池。
+*/
+
+
+// thread-pool：
+
+import java.util.concurrent.*;
+
+public class Main {
+    public static void main(String[] args) {
+        /**
+         * 创建一个固定大小的线程池:
+         * 一次只能执行4个线程，多余线程需要等其他线程结束后才能执行。
+         * ExecutorService es = Executors.newFixedThreadPool(4);
+         * */
+        int min = 4;
+        int max = 10;
+        /**
+         * 配置动态线程池大小在4~10之间
+         * */
+        ExecutorService es = new ThreadPoolExecutor(min, max, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+        for (int i = 0; i < 6; i++) {
+            es.submit(new Task("" + i));
+        }
+        // 关闭线程池:
+        es.shutdown();
+        /**
+         * shutdown()方法关闭线程池的时候，它会等待正在执行的任务先完成，然后再关闭
+         * shutdownNow()会立刻停止正在执行的任务
+         * awaitTermination()则会等待指定的时间让线程池关闭
+
+         * 网友：如果最后只使用了awaitTermination()，会发现程序一直没结束，因为这个函数并没有关闭线程池。其通常放在shutdown()函数后面用来判断固定时间后线程池是否关闭
+         * */
+    }
+}
+
+class Task implements Runnable {
+    private final String name;
+
+    public Task(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void run() {
+        System.out.println("start task " + name);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+        System.out.println("end task " + name);
+    }
+}
+
+
+/**
+ * ScheduledThreadPool:
+ * --------------------
+ * FixedRate是指任务总是以固定时间间隔触发，不管任务执行多长时间
+ * FixedDelay是指，上一次任务执行完毕后，等待固定的时间间隔，再执行下一次任务
+ *
+ * Q: 在scheduleAtFixedRate模式下，假设每秒触发，如果某次任务执行时间超过1秒，后续任务会不会并发执行？
+ * A: 如果此任务的任何执行时间超过其周期，则后续执行可能会延迟开始，但不会并发执行。
+ * Q: 如果任务抛出了异常，后续任务是否继续执行？
+ * A: 如果任务的任何执行遇到异常，则将禁止后续任务的执行。
+ *
+ * Java标准库还提供了一个java.util.Timer类，这个类也可以定期执行任务，但是，一个Timer会对应一个Thread，所以，一个Timer只能定期执行一个任务，多个定时任务必须启动多个Timer，
+ * 而一个ScheduledThreadPool就可以调度多个定时任务，所以，我们完全可以用ScheduledThreadPool取代旧的Timer。
+ * */
+
+import java.util.concurrent.*;
+
+public class Main {
+    public static void main(String[] args) {
+        ScheduledExecutorService ses = Executors.newScheduledThreadPool(4);
+        // ses.schedule(new Task("one-time"), 1, TimeUnit.SECONDS);// 1s后执行一次性任务
+
+        // ses.scheduleAtFixedRate(new Task("fixed -rate"), 2, 3, TimeUnit.SECONDS);// 2s后每间隔3s执行一次任务, 不管上次任务是否完毕
+        ses.scheduleWithFixedDelay(new Task("fixed-delay"), 2, 3, TimeUnit.SECONDS);// 2s后开始执行,任务完成后，以3秒为间隔再执行
+    }
+}
+
+class Task implements Runnable {
+    private final String name;
+
+    public Task(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void run() {
+        System.out.println("start task " + name);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+        System.out.println("end task " + name);
+    }
+}
+
+
+/*
+Future:
+--------
+
+Runnable接口有个问题，它的方法没有返回值。
+class Task implements Runnable {
+    public String result;
+
+    public void run() {
+        this.result = longTimeCalculation(); 
+    }
+}
+
+Java标准库还提供了一个Callable接口，和Runnable接口比，它多了一个返回值：
+Callable接口是一个泛型接口，可以返回指定类型的结果。
+class Task implements Callable<String> {
+    public String call() throws Exception {
+        return longTimeCalculation(); 
+    }
+}
+
+ExecutorService.submit()方法，可以看到，它返回了一个Future类型，一个Future类型的实例代表一个未来能获取结果的对象：
+
+ExecutorService executor = Executors.newFixedThreadPool(4); 
+// 定义任务:
+Callable<String> task = new Task();
+// 提交任务并获得Future:
+Future<String> future = executor.submit(task);
+// 从Future获取异步执行返回的结果:
+String result = future.get(); // 可能阻塞
+
+
+一个Future<V>接口表示一个未来可能会返回的结果，它定义的方法有：
+
+get()：获取结果（可能会等待）
+get(long timeout, TimeUnit unit)：获取结果，但只等待指定的时间；
+cancel(boolean mayInterruptIfRunning)：取消当前任务；
+isDone()：判断任务是否已完成。
+
+缺点：
+使用Future获得异步执行结果时，要么调用阻塞方法get()，要么轮询看isDone()是否为true，这两种方法都不是很好，因为主线程也会被迫等待。
+*/
+
+
+/*
+CompletableFuture:
+------------------
+
+从Java 8开始引入了CompletableFuture，它针对Future做了改进，
+可以传入回调对象，当异步任务完成或者发生异常时，自动调用回调对象的回调方法。
+完成时，CompletableFuture会调用Consumer对象：
+异常时，CompletableFuture会调用Function对象：
+
+CompletableFuture的优点是：
+异步任务结束时，会自动回调某个对象的方法；
+异步任务出错时，会自动回调某个对象的方法；
+主线程设置好回调后，不再关心异步任务的执行。
+
+
+CompletableFuture可以指定异步处理流程：
+
+thenAccept()处理正常结果；
+exceptional()处理异常结果；
+thenApplyAsync()用于串行化另一个CompletableFuture；
+anyOf()和allOf()用于并行化多个CompletableFuture。
+*/
+
+
+// 基本用法：
+
+import java.util.concurrent.CompletableFuture;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 创建异步执行任务:
+        CompletableFuture<Double> cf = CompletableFuture.supplyAsync(Main::fetchPrice);
+        // 如果执行成功:
+        cf.thenAccept((result) -> {
+            System.out.println("price: " + result);
+        });
+        // 如果执行异常:
+        cf.exceptionally((e) -> {
+            e.printStackTrace();
+            return null;
+        });
+        // 主线程不要立刻结束，否则CompletableFuture默认使用的线程池会立刻关闭:
+        Thread.sleep(200);
+    }
+
+    static Double fetchPrice() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+        }
+        if (Math.random() < 0.3) {
+            throw new RuntimeException("fetch price failed!");
+        }
+        return 5 + Math.random() * 20;
+    }
+}
+
+
+
+// 串行执行任务：
+import java.util.concurrent.CompletableFuture;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 第一个任务，查询code
+        CompletableFuture<String> cfQuery = CompletableFuture.supplyAsync(() -> {
+            return queryCode("中国石油");
+        });
+        // cfQuery成功后继续执行下一个任务,获取价格
+        CompletableFuture<Double> cfFetch = cfQuery.thenApplyAsync((code) -> {
+            return fetchPrice(code);
+        });
+        // cfFetch成功后打印结果:
+        cfFetch.thenAccept((result) -> {
+            System.out.println("price: " + result);
+        });
+        // 主线程不要立刻结束，否则CompletableFuture默认使用的线程池会立刻关闭:
+        Thread.sleep(2000);
+    }
+
+    static String queryCode(String name) {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+        }
+        return "601857";
+    }
+
+    static Double fetchPrice(String code) {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+        }
+        return 5 + Math.random() * 20;
+    }
+}
+
+
+/*
+并行执行任务：
+------------
+anyOf()可以实现“任意个CompletableFuture只要一个成功”，allOf()可以实现“所有CompletableFuture都必须成功”
+
+注意CompletableFuture的命名规则：
+xxx()：表示该方法将继续在已有的线程中执行；
+xxxAsync()：表示将异步在线程池中执行。
+*/ 
+import java.util.concurrent.CompletableFuture;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 两个CompletableFuture执行异步查询:
+        CompletableFuture<String> cfQueryFromSina = CompletableFuture.supplyAsync(() -> {
+            return queryCode("中国石油", "https://finance.sina.com.cn/code/");
+        });
+        CompletableFuture<String> cfQueryFrom163 = CompletableFuture.supplyAsync(() -> {
+            return queryCode("中国石油", "https://money.163.com/code/");
+        });
+
+        // 用anyOf合并为一个新的CompletableFuture:
+        CompletableFuture<Object> cfQuery = CompletableFuture.anyOf(cfQueryFromSina, cfQueryFrom163);
+
+        // 两个CompletableFuture执行异步查询:
+        CompletableFuture<Double> cfFetchFromSina = cfQuery.thenApplyAsync((code) -> {
+            return fetchPrice((String) code, "https://finance.sina.com.cn/price/");
+        });
+        CompletableFuture<Double> cfFetchFrom163 = cfQuery.thenApplyAsync((code) -> {
+            return fetchPrice((String) code, "https://money.163.com/price/");
+        });
+
+        // 用anyOf合并为一个新的CompletableFuture:
+        CompletableFuture<Object> cfFetch = CompletableFuture.anyOf(cfFetchFromSina, cfFetchFrom163);
+
+        // 最终结果:
+        cfFetch.thenAccept((result) -> {
+            System.out.println("price: " + result);
+        });
+        // 主线程不要立刻结束，否则CompletableFuture默认使用的线程池会立刻关闭:
+        Thread.sleep(200);
+    }
+
+    static String queryCode(String name, String url) {
+        System.out.println("query code from " + url + "...");
+        try {
+            Thread.sleep((long) (Math.random() * 100));
+        } catch (InterruptedException e) {
+        }
+        return "601857";
+    }
+
+    static Double fetchPrice(String code, String url) {
+        System.out.println("query price from " + url + "...");
+        try {
+            Thread.sleep((long) (Math.random() * 100));
+        } catch (InterruptedException e) {
+        }
+        return 5 + Math.random() * 20;
+    }
+}
+
+/*
+fork/join
+
+Java 7开始引入了一种新的Fork/Join线程池，它可以执行一种特殊的任务：把一个大任务拆成多个小任务并行执行。
+
+ForkJoinPool线程池可以把一个大任务分拆成小任务并行执行，任务类必须继承自RecursiveTask或RecursiveAction
+
+Fork/Join线程池在Java标准库中也有应用。
+Java标准库提供的java.util.Arrays.parallelSort(array)可以进行并行排序，它的原理就是内部通过Fork/Join对大数组分拆进行并行排序，在多核CPU上就可以大大提高排序的速度。
+*/
+
+import java.util.Random;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 创建2000个随机数组成的数组:
+        long[] array = new long[2000];
+        long expectedSum = 0;
+        for (int i = 0; i < array.length; i++) {
+            array[i] = random();
+            expectedSum += array[i];
+        }
+        System.out.println("Expected sum: " + expectedSum);
+        // fork/join:
+        ForkJoinTask<Long> task = new SumTask(array, 0, array.length);
+        long startTime = System.currentTimeMillis();
+        Long result = ForkJoinPool.commonPool().invoke(task);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Fork/join sum: " + result + " in " + (endTime - startTime) + " ms.");
+    }
+
+    static Random random = new Random(3); // 设定seed值后，生成的随机数是一个定值
+
+    static long random() {
+        return random.nextInt(10000);
+    }
+}
+
+class SumTask extends RecursiveTask<Long> {
+    static final int THRESHOLD = 200; // 设定最大持有多少个数
+    long[] array;
+    int start;
+    int end;
+
+    SumTask(long[] array, int start, int end) {
+        this.array = array;
+        this.start = start;
+        this.end = end;
+    }
+
+    @Override
+    protected Long compute() {
+        if (end - start <= THRESHOLD) {
+            // 如果任务足够小,直接计算:
+            long sum = 0;
+            for (int i = start; i < end; i++) {
+                sum += this.array[i];
+                // 故意放慢计算速度:
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                }
+            }
+            return sum;
+        }
+        // 任务太大,一分为二:
+        int middle = (end + start) / 2;
+        System.out.println(String.format("split %d~%d ==> %d~%d, %d~%d", start, end, start, middle, middle, end));
+        SumTask subtask1 = new SumTask(this.array, start, middle);
+        SumTask subtask2 = new SumTask(this.array, middle, end);
+        invokeAll(subtask1, subtask2); // 并行运行两个子任务
+        Long subresult1 = subtask1.join(); // 获取子任务的结果
+        Long subresult2 = subtask2.join();
+        Long result = subresult1 + subresult2;
+        System.out.println("result = " + subresult1 + " + " + subresult2 + " ==> " + result);
+        return result;
+    }
+}
+
+/*
+ThreadLocal:
+------------
+Java标准库提供了一个特殊的ThreadLocal，它可以在一个线程中传递同一个对象。
+
+static ThreadLocal<User> threadLocalUser = new ThreadLocal<>(); // 通常以静态字段初始化
+
+使用：
+void processUser(user) {
+    try {
+        threadLocalUser.set(user);
+        step1();
+        step2();
+    } finally {
+        threadLocalUser.remove();  // 一定要记得清除
+    }
+}
+
+// 一个线程中不同的方法获取threadLocalUser.
+void step1() {
+    User u = threadLocalUser.get();
+    log();
+    printUser();
+}
+
+void log() {
+    User u = threadLocalUser.get();
+    println(u.name);
+}
+
+void step2() {
+    User u = threadLocalUser.get();
+    checkUser(u.id);
+}
+
+*/
+
+// 调用Thread.currentThread()获取当前线程：
+public class Main {
+    public static void main(String[] args) throws Exception {
+        log("start main...");
+        new Thread(() -> {
+            log("run task...");
+        }).start();
+        new Thread(() -> {
+            log("print...");
+        }).start();
+        log("end main.");
+    }
+
+    static void log(String s) {
+        System.out.println(Thread.currentThread().getName() + ": " + s);
+    }
+}
+
+
+// 例如： 一个保存了当前用户名的ThreadLocal可以封装为一个UserContext对象：
+public class Main {
+    public static void main(String[] args) throws Exception {
+        try (var ctx = new UserContext("Bobi")) {
+            // 可任意调用UserContext.currentUser():
+            String currentUser = UserContext.currentUser(); // 获取当前线程绑定的用户名
+            System.out.println(currentUser);
+        } // 在此自动调用UserContext.close()方法释放ThreadLocal关联对象
+    }
+}
+
+class UserContext implements AutoCloseable {
+    static final ThreadLocal<String> ctx = new ThreadLocal<>();
+
+    public UserContext(String user) {
+        ctx.set(user);
+    }
+
+    public static String currentUser() {
+        return ctx.get();
+    }
+
+    @Override
+    public void close() {
+        ctx.remove();
+    }
+}
