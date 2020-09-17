@@ -1605,6 +1605,36 @@ try{
 
 lambda:
 ---------
+/*
+Arrays.sort(array, (s1, s2) -> s1.compareTo(s2));
+我们把只定义了单方法的接口称之为FunctionalInterface，用注解@FunctionalInterface标记
+接收FunctionalInterface作为参数的时候，可以把实例化的匿名类改写为Lambda表达式，能大大简化代码。
+*/
+
+package com.tcp;
+/*
+ * List<String>转为List<Person>
+ * */
+import java.util.*;
+import java.util.stream.*;
+
+public class Main {
+    public static void main(String[] args) {
+        List<String> names = List.of("Bob", "Alice", "Tim");
+        List<Person> persons = names.stream().map(Person::new).collect(Collectors.toList());
+        System.out.println(persons);
+    }
+}
+
+class Person {
+    String name;
+    public Person(String name) {
+        this.name = name;
+    }
+    public String toString() {
+        return "Person:" + this.name;
+    }
+}
 
 
 
@@ -1740,6 +1770,31 @@ public class Main {
         System.out.println("合并字符串: " + mergedString);
 
 
+    }
+}
+
+
+// Stream.of()
+import java.util.stream.Stream;
+public class Main {
+    public static void main(String[] args) {
+        Stream<String> stream = Stream.of("A", "B", "C", "D");
+        // forEach()方法相当于内部循环调用，
+        stream.forEach(System.out::println);
+    }
+}
+
+// List.stream()
+// 把数组变成Stream使用Arrays.stream()方法。对于Collection（List、Set、Queue等），直接调用stream()方法就可以获得Stream。
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+public class Main {
+    public static void main(String[] args) {
+        Stream<String> stream1 = Arrays.stream(new String[] { "A", "B", "C" });
+        Stream<String> stream2 = List.of("X", "Y", "Z").stream();
+        stream1.forEach(System.out::println);
+        stream2.forEach(System.out::println);
     }
 }
 
