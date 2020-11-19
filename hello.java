@@ -3286,6 +3286,60 @@ public class ByteOperationFile {
 // BufferedInputStream, bufferedOutputStream:
 // -------------------------------------------
 
+/*
+bufferedInputStream会比直接用inputstream格式更省时间
+计算时间可以用:
+long start = System.currentTimeMillis();
+long end = System.currentTimeMillis();
+
+复制文件：
+String srcPath = "E:\\Java\\music.mp3";
+String destPath = "D:\\copymusic.mp3";
+copyFile(srcPath,destPath);
+*/
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
+public class BufferOperation {
+    public static void main(String args[]) throws Exception{
+        String srcPath = "E:\\Java\\music.mp3";
+        String destPath = "D:\\copymusic.mp3";
+        copyFile(srcPath,destPath);
+    }
+    public static void copyFile(String srcPath ,String destPath) throws Exception{
+       FileInputStream fis = new FileInputStream(srcPath);
+       FileOutputStream fos =new FileOutputStream(destPath);
+       int len = 0;
+       long start=System.currentTimeMillis();
+       while ((len = fis.read()) != -1){
+           fos.write(len);
+       }
+       long end=System.currentTimeMillis();
+       System.out.println("======下面是所用的时间======");
+       System.out.println(end-start);
+       fis.close();
+       fos.close();
+
+        BufferedInputStream bis = new BufferedInputStream(fis);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        int len = 0;
+        long start=System.currentTimeMillis();
+        while ((len = bis.read()) != -1){
+            bos.write(len);
+        }
+        long end=System.currentTimeMillis();
+        System.out.println("======下面是所用的时间======");
+        System.out.println(end-start);
+        bis.close();
+        bos.close();
+    }
+}
+
+
+// 从网络读取url,并save到本地
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
@@ -3300,8 +3354,10 @@ public class main {
         URL url = new URL("http://www.51gjie.com/Images/image1/lkqixikw.lqs.jpg");
         URLConnection connection = url.openConnection();
         InputStream inputStream = connection.getInputStream();
+
         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(new File(folder_path + "test.jpg")));
+        
         int c;
         byte[] temp = new byte[1024 * 2];
         while ((c = bufferedInputStream.read(temp)) != -1) {
