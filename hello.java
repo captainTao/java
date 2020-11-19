@@ -1,13 +1,18 @@
 /*
 ??
-1. set如何取值？
-2. oc sign,token文件位置
+1.set类型如何取值？
+2.oc sign,token文件位置
 ATNetworkDao.m
 ATQNSinal.m
 3.单例和静态方法的优劣势？
+4.getResourceAsStream路径获取方法
+5.jackson解析嵌套xml
 */
 
 /*
+intel ideal使用教程：
+https://www.cnblogs.com/zsty/p/9950722.html
+
 Java SE：Standard Edition
 Java EE：Enterprise Edition
 Java ME：Micro Edition
@@ -1589,8 +1594,54 @@ public class FreshJuiceTest {
    }
 }
 
+// enum是一个class，每个枚举的值都是class实例，因此，这些实例有一些方法：
 Weekday.SUN.name()  // "SUN",枚举的原型值
+//.name()和.toString()输出的结果是一样的，但.toString()可以被覆写，输出可以自定义，.name()则不行
+
 Weekday.MON.ordinal(); // 1，枚举的下标，从0开始
+
+
+// 为了代码的健壮性，可以定义构造方法给每个枚举值添加字段：
+public class Main {
+    public static void main(String[] args) {
+        Weekday day = Weekday.SUN; // 赋值的时候，还是一样
+        if (day.dayValue == 6 || day.dayValue == 0) {
+            System.out.println("Work at home!");
+        } else {
+            System.out.println("Work at office!");
+        }
+    }
+}
+
+enum Weekday {
+    MON(1), TUE(2), WED(3), THU(4), FRI(5), SAT(6), SUN(0);
+
+    public final int dayValue;
+
+    private Weekday(int dayValue) {
+        this.dayValue = dayValue;
+    }
+}
+
+
+
+Record:
+---------
+/*
+从Java 14开始，提供新的record关键字，可以非常方便地定义Data Class：
+使用record定义的是不变类；
+可以编写Compact Constructor对参数进行验证；
+可以定义静态方法。
+*/
+public class Main {
+    public static void main(String[] args) {
+        Point p = new Point(123, 456);
+        System.out.println(p.x());
+        System.out.println(p.y());
+        System.out.println(p);
+    }
+}
+public record Point(int x, int y) {}
 
 
 
@@ -1603,6 +1654,74 @@ try{
 }
 
 
+注解：
+-------
+/*
+@Override：让编译器检查该方法是否正确地实现了覆写；
+@SuppressWarnings：告诉编译器忽略此处代码产生的警告。
+一个配置了@PostConstruct的方法会在调用构造方法后自动被调用
+
+
+注解分为三类：
+第一类是由编译器使用的注解，例如：
+@Override：让编译器检查该方法是否正确地实现了覆写；
+@SuppressWarnings：告诉编译器忽略此处代码产生的警告。
+这类注解不会被编译进入.class文件，它们在编译后就被编译器扔掉了。
+
+第二类是由工具处理.class文件使用的注解，比如有些工具会在加载class的时候，对class做动态修改，实现一些特殊的功能。这类注解会被编译进入.class文件，但加载结束后并不会存在于内存中。这类注解只被一些底层库使用，一般我们不必自己处理。
+
+第三类是在程序运行期能够读取的注解，它们在加载后一直存在于JVM中，这也是最常用的注解。例如，一个配置了@PostConstruct的方法会在调用构造方法后自动被调用（这是Java代码读取该注解实现的功能，JVM并不会识别该注解）。
+
+
+*/
+
+// this is a component:
+@Resource("hello")
+public class Hello {
+    @Inject
+    int n;
+
+    @PostConstruct
+    public void hello(@Param String name) {
+        System.out.println(name);
+    }
+
+    @Override
+    public String toString() {
+        return "Hello";
+    }
+}
+
+/*
+定义一个注解时，还可以定义配置参数。配置参数可以包括：
+
+所有基本类型；
+String；
+枚举类型；
+基本类型、String、Class以及枚举的数组。
+因为配置参数必须是常量，所以，上述限制保证了注解在定义时就已经确定了每个参数的值。
+
+注解的配置参数可以有默认值，缺少某个配置参数时将使用默认值。
+
+此外，大部分注解会有一个名为value的配置参数，对此参数赋值，可以只写常量，相当于省略了value参数。
+
+如果只写注解，相当于全部使用默认值。
+*/
+public class Hello {
+    @Check(min=0, max=100, value=55)
+    public int n;
+
+    @Check(value=99)
+    public int p;
+
+    @Check(99) // @Check(value=99)
+    public int x;
+
+    @Check
+    public int y;
+}
+
+
 lambda:
 ---------
 /*
@@ -1611,9 +1730,21 @@ Arrays.sort(array, (s1, s2) -> s1.compareTo(s2));
 接收FunctionalInterface作为参数的时候，可以把实例化的匿名类改写为Lambda表达式，能大大简化代码。
 */
 
+
+// String::compareTo
+import java.util.Arrays;
+public class Main {
+    public static void main(String[] args) {
+        String[] array = new String[] { "Apple", "Orange", "Banana", "Lemon" };
+        Arrays.sort(array, String::compareTo);
+        System.out.println(String.join(", ", array));
+    }
+}
+
 package com.tcp;
 /*
  * List<String>转为List<Person>
+ * Person::new
  * */
 import java.util.*;
 import java.util.stream.*;
@@ -3130,6 +3261,80 @@ String str = writer.toString();
 String str = new String(ByteStreams.toByteArray(inputStream));
 */
 
+// InputStream, OutputStream:
+// --------------------------
+import java.io.*;
+
+public class ByteOperationFile {
+    public static void main(String args[]) throws Exception {
+       File f = new File("E:" + File.separator + "Java" + File.separator + "bytetest.txt");
+        FileOutputStream out =new FileOutputStream(f);
+        String message = "hi, i am a QA !";
+        byte[] ms = message.getBytes();
+        out.write(ms);
+        out.close();
+
+        FileInputStream in =new FileInputStream(f);
+        byte b[] = new byte[1024];
+        in .read(b);
+        in .close();
+        System.out.println(new String(b));
+    }
+}
+
+
+// BufferedInputStream, bufferedOutputStream:
+// -------------------------------------------
+
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+
+public class main {
+    public static void main(String[] args) throws IOException {
+        String folder_path = "/Users/captain/Desktop/iotest/save/";
+        File file_folder = new File(folder_path);
+        if (!file_folder.exists()) {
+            file_folder.mkdirs();
+        }
+        URL url = new URL("http://www.51gjie.com/Images/image1/lkqixikw.lqs.jpg");
+        URLConnection connection = url.openConnection();
+        InputStream inputStream = connection.getInputStream();
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(new File(folder_path + "test.jpg")));
+        int c;
+        byte[] temp = new byte[1024 * 2];
+        while ((c = bufferedInputStream.read(temp)) != -1) {
+            bufferedOutputStream.write(temp,0, c);
+        }
+        bufferedOutputStream.close();
+        inputStream.close();
+    }
+}
+
+
+// FileReader, FileWriter
+// ----------------------
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+
+public class CharacterOperationFile {
+    public static void main(String[] args) throws Exception {
+        File f = new File("E:" + File.separator + "Java" + File.separator + "charactertest.txt");
+        FileWriter out = new FileWriter(f);
+        out.write ("My name is zhangsan !!");
+        out.close();
+
+
+        FileReader in = new FileReader(f);
+        char[] buf = new char[1024];
+        int len = in.read(buf);  //此时的read方法可以读取一个字符或几个字符,len代表实际读取到的字符的个数。
+        System.out.println(new String(buf));
+        in.close();
+    }
+}
 
 
 
@@ -7198,7 +7403,6 @@ XML常用于配置文件、网络消息传输等。
 book.xml:
 
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE note SYSTEM "book.dtd">
 <book id="1">
     <name>Java核心技术</name>
     <author>Cay S. Horstmann</author>
@@ -7357,6 +7561,24 @@ public class Book {
 com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.1
 org.codehaus.woodstox:woodstox-core-asl:4.4.1
 
+<dependency>
+  <groupId>com.fasterxml.jackson.dataformat</groupId>
+  <artifactId>jackson-dataformat-xml</artifactId>
+  <version>2.10.1</version>
+</dependency>
+<dependency>
+  <groupId>org.codehaus.woodstox</groupId>
+  <artifactId>woodstox-core-asl</artifactId>
+  <version>4.4.1</version>
+</dependency>
+
+
+
+@JacksonXmlElementWrapper：可用于指定List等集合类，外围标签名；
+@JacksonXmlProperty：指定包装标签名，或者指定标签内部属性名；
+@JacksonXmlRootElement：指定生成xml根标签的名字；
+@JacksonXmlText：指定当前这个值，没有xml标签包裹
+
 然后，定义好JavaBean，就可以用下面几行代码解析：
 
 */
@@ -7407,6 +7629,18 @@ Fastjson
 
 jackson maven依赖：
 com.fasterxml.jackson.core:jackson-databind:2.10.0
+
+
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.10.0</version>
+</dependency>
+<dependency>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatype-jsr310</artifactId>
+    <version>2.10.0</version>
+</dependency>
 */
 
 // 反序列化：
@@ -7428,7 +7662,7 @@ String json = mapper.writeValueAsString(book);
 {
     "name": "Java核心技术",
     "pubDate": "2016-09-01"
-}
+}getResourceAsStream
 // 要解析为：
 
 public class Book {
@@ -7442,3 +7676,94 @@ public class Book {
 ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
 // 也可以自定义解析格式
+
+
+
+
+/*
+监听文件变化：
+------------
+*/
+
+
+// 方法一：common-io
+/*
+<dependency>
+  <groupId>commons-io</groupId>
+  <artifactId>commons-io</artifactId>
+  <version>2.6</version>
+</dependency>
+<dependency>
+  <groupId>log4j</groupId>
+  <artifactId>log4j</artifactId>
+  <version>1.2.12</version>
+</dependency>
+
+*/
+import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
+import java.io.File;
+import java.util.logging.Logger;
+// 新建一个自己的监听类
+public class FileListener extends FileAlterationListenerAdaptor{
+    private Logger log = Logger.getLogger(String.valueOf(FileListener.class));
+
+    @Override
+    public void onDirectoryChange(File directory) {
+        super.onDirectoryChange(directory);
+        log.info("[目录改变：]"+ directory.getAbsolutePath());
+    }
+
+    @Override
+    public void onFileChange(File file) {
+        super.onFileChange(file);
+        log.info("[修改：]" + file.getAbsolutePath());
+    }
+
+    @Override
+    public void onFileCreate(File file) {
+        super.onFileCreate(file);
+        log.info("[创建：]" + file.getAbsolutePath());
+    }
+
+    @Override
+    public void onFileDelete(File file) {
+        super.onFileDelete(file);
+        log.info("[删除：]" + file.getAbsolutePath());
+    }
+}
+
+
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.HiddenFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.monitor.FileAlterationMonitor;
+import org.apache.commons.io.monitor.FileAlterationObserver;
+
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+public class App {
+    public static void main( String[] args ) throws Exception {
+        // 监控目录
+        String rootDir = "/Users/captain/Desktop/test";
+        // 轮询间隔 5 秒
+        long interval = TimeUnit.SECONDS.toMillis(1);
+        // 创建过滤器
+        IOFileFilter directories = FileFilterUtils.and(
+                FileFilterUtils.directoryFileFilter(),
+                HiddenFileFilter.VISIBLE);
+        IOFileFilter files = FileFilterUtils.and(
+                FileFilterUtils.fileFileFilter(),
+                FileFilterUtils.suffixFileFilter(".txt"));
+        IOFileFilter filter = FileFilterUtils.or(directories, files);
+        // 使用过滤器
+        FileAlterationObserver observer = new FileAlterationObserver(new File(rootDir), filter);
+        //不使用过滤器
+        //FileAlterationObserver observer = new FileAlterationObserver(new File(rootDir));
+        observer.addListener(new FileListener());
+        //创建文件变化监听器
+        FileAlterationMonitor monitor = new FileAlterationMonitor(interval, observer);
+        // 开始监控
+        monitor.start();
+    }
+}
