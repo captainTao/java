@@ -2,6 +2,7 @@ package com.school;
 
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,6 +16,7 @@ public class AnalyseXml {
         JacksonXmlModule module = new JacksonXmlModule();
         XmlMapper mapper = new XmlMapper(module);
         Group group = mapper.readValue(input, Group.class);
+        System.out.println(group);
     }
 }
 

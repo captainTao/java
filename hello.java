@@ -1,15 +1,37 @@
 /*
 ??
 1.set类型如何取值？
+
 2.oc sign,token文件位置
 ATNetworkDao.m
 ATQNSinal.m
+needSignatureString
+
 3.单例和静态方法的优劣势？
 4.getResourceAsStream路径获取方法
 5.jackson解析嵌套xml
+
+6.md5后是多少位数？
+md5后的byte数组长度是16，byte[]数组内java是包含正负数的，oc,python全部是正数
+转换为16进制后是一个长度为32的字符串
+
+7.时间戳
+// 返回时间距离1970的ms数：（用的时间戳*1000）
+String timeNow = String.valueOf(new Date().getTime());
+// oc中：
+NSString *time = [NSString stringWithFormat:@"%.0f",[[NSDate date] timeIntervalSince1970] * 1000];
+
+8.判断是否是某种类型
+https://blog.csdn.net/weixin_49794051/article/details/108843083
+instance of
+isInstance
+getClass()
+isPrimitive
 */
 
+
 /*
+
 intel ideal使用教程：
 https://www.cnblogs.com/zsty/p/9950722.html
 
@@ -499,6 +521,27 @@ System.out.printf("n=%d, hex=%08x", n, n); // 注意，两个%占位符必须传
 %e  格式化输出科学计数法表示的浮点数
 %s  格式化字符串
 */
+
+/**
+ * Output:
+ 
+num is 3.141593
+num is {003.140}
+06.3 num is 03.142
+.3 num is 3.142
+9.99 num is 10.00
+   
+ */
+
+public class MainClass {
+  public static void main(String args[]) throws Exception {
+    System.out.printf("num is %03f\n", 3.14159265 );
+    System.out.printf("num is {%07.3f}\n", 3.14 );
+    System.out.printf("06.3 num is %06.3f\n", 3.14159265 );
+    System.out.printf(".3 num is %.3f\n", 3.14159265 );
+    System.out.printf("9.99 num is %4.2f\n", 9.999999999 );
+
+}
 
 
 输入:
@@ -1572,6 +1615,9 @@ public class Person {
 
 枚举
 ---------
+
+// https://www.jianshu.com/p/40faefffc1a1
+
 /*
 enum定义的类型就是class，只不过它有以下几个特点：
 
@@ -1623,6 +1669,18 @@ enum Weekday {
     }
 }
 
+
+// 定义人物类型
+enum FigureType {
+    S(4, "Pregnant"), P(3,"Patient"), E(2,"Elder"), C(1,"Child"), N(0,"Normal");
+
+    public final int typeValue;
+    public final String sign;
+    FigureType(int typeValue, String sign){
+        this.typeValue = typeValue;
+        this.sign = sign;
+    }
+}
 
 
 Record:
@@ -2040,6 +2098,28 @@ Stack：基于Vector实现的LIFO的栈。
 
 Iterator<Integer> iterator = list.iterator();
 start != iterator.next().intValue();
+
+// https://www.cnblogs.com/hadoop-dev/p/6255466.html
+
+// Map的iterator:
+public static String toJsonString(Map<String, String> map) {
+    Iterator<Map.Entry<String, String>> i = map.entrySet().iterator();
+    if (!i.hasNext())
+        return "{}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\n");
+    for (; ; ) {
+        Map.Entry<String, String> e = i.next();
+        Object key = e.getKey();
+        Object value = e.getValue();
+        sb.append("\t\"").append(key).append("\"");
+        sb.append(" : ");
+        sb.append("\"").append(value).append("\"");
+        if (!i.hasNext())
+            return sb.append("\n}").toString();
+        sb.append(",\n").append(' ');
+    }
+}
 
 */
 
@@ -3263,6 +3343,8 @@ String str = new String(ByteStreams.toByteArray(inputStream));
 
 // InputStream, OutputStream:
 // --------------------------
+// https://blog.csdn.net/weixin_30878501/article/details/95817518
+
 import java.io.*;
 
 public class ByteOperationFile {
@@ -3516,6 +3598,77 @@ try (ObjectInputStream input = new ObjectInputStream(bufferin)) {
     String s = input.readUTF();
     Double d = (Double) input.readObject();
 }
+
+
+///////////////////////////////////////////
+package serialize;
+
+import java.io.*;
+import java.util.Arrays;
+
+public class main {
+    public static void main(String[] args) {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try (ObjectOutputStream output = new ObjectOutputStream(buffer)) {
+            // 写入int:
+            output.writeInt(12345);
+            // 写入String:
+            output.writeUTF("Hello");
+            // 写入Object:
+            output.writeObject(123.456);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Arrays.toString(buffer.toByteArray()));
+
+        ByteArrayInputStream bufferIn = new ByteArrayInputStream(buffer.toByteArray());
+
+        try (ObjectInputStream input = new ObjectInputStream(bufferIn)) {
+            int n = input.readInt();
+            String s = input.readUTF();
+            Double d = (Double) input.readObject();
+            System.out.format("n = %d, s = %s, d = %f", n, s, d);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+////////////////////////////////
+import java.io.*;
+
+public class Serialize {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+
+        Person hong = new Person("hong", Gender.female, 24);
+        Person ming = new Person("ming", 22);
+        Serialize main  = new Serialize();
+        main.toFile(hong, "/Users/captain/Desktop/hong");
+        main.toFile(ming, "/Users/captain/Desktop/ming");
+        Person p1 = (Person) main.fromFile("/Users/captain/Desktop/hong");
+        System.out.println(p1);
+        Person p2 = (Person) main.fromFile("/Users/captain/Desktop/ming");
+        System.out.println(p2);
+    }
+
+    public void toFile(Serializable obj, String filepath)throws IOException{
+        try(FileOutputStream  fileOutputStream = new FileOutputStream(filepath);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+        ) {
+            objectOutputStream.writeObject(obj);
+        }
+    }
+
+
+    public Serializable fromFile(String filepath) throws IOException, ClassNotFoundException{
+        try(FileInputStream fileInputStream = new FileInputStream(filepath);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+        ) {
+            return (Serializable) objectInputStream.readObject();
+        }
+    }
+}
+
 
 
 /*
@@ -4536,6 +4689,7 @@ InputStream input = conn.getInputStream();
 
 
 // JDK11后,引入了新的HttpClient，支持链式：
+// https://openjdk.java.net/groups/net/httpclient/intro.html
 // get()
 import java.net.URI;
 import java.net.http.*;
@@ -4846,7 +5000,7 @@ System.out.println("要:"+Integer.valueOf(b&0xff)); //129
 
 */
 
-// 下方可以把java md5后byte数组中的负数全部转为正数：这样与OC的代码就保持一致了；
+// 下方可以把java md5后byte数组中的负数全部转为正数：这样与OC的代码就保持一致了；python md5后byte数组也全部是正数
 import java.util.*;
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -7735,6 +7889,55 @@ ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
 
 
+/*
+
+gson:
+------
+<dependency>
+  <groupId>com.google.code.gson</groupId>
+  <artifactId>gson</artifactId>
+  <version>2.8.6</version>
+</dependency>
+
+
+
+*/
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.util.ArrayList;
+
+
+String json1="{'id':302,'name':'三年二班'," +
+                "'stus':[{'id':101,'name':'小青蛙','age':16},{'id':102,'name':'小蚂蚁','age':13}]}";
+Gson gson = new Gson();
+
+//解析对象：第一个参数：待解析的字符串 第二个参数结果数据类型的Class对象
+Grade grade = gson.fromJson(json1,Grade.class);
+System.out.println(grade);
+
+// 解析string为list:
+String json2="['北京','天津','杭州']";//解析数组
+ArrayList<String> list=gson.fromJson(json2, new TypeToken<ArrayList<String>>(){}.getType());
+
+
+
+/*
+fastjson
+---------
+
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>fastjson</artifactId>
+    <version>1.2.73</version>
+</dependency>
+
+*/
+
+import com.alibaba.fastjson.JSON;
+
+List<UserList> lists =  JSON.parseArray(result,UserList.class);
+System.out.println(lists);
 
 /*
 监听文件变化：
@@ -7823,3 +8026,19 @@ public class App {
         monitor.start();
     }
 }
+
+
+保存图片：
+-------
+//获取网络图片通过ImageIO
+BufferedImage image = ImageIO.read(new URL(uri));
+ImageIO.write(image, "png", new File(savePath));
+
+// 获取网络图片通过get请求
+HttpResponse<InputStream> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+BufferedImage image = ImageIO.read(response.body());
+
+// 通过本地图片获取到新的图片
+BufferedImage image = ImageIO.read(new File("/Users/captain/Desktop/meinv.png"));
+ImageIO.write(image, "png", new File("/Users/captain/Desktop/sansan.png"));
+ImageIO.write(image, "png", new File(savePath));

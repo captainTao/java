@@ -2,7 +2,33 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dc00e2b9-0d7b-4b14-8cb1-dcc2c310e661" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../homework/20201108PriorityQueue/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../homework/20201125httpclient/httpclient.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../homework/20201211Jackson/.idea/Jackson.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../homework/20201211Jackson/json.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../homework/20201211json/gson.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../xml-jackson/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../hello.java" beforeDir="false" afterPath="$PROJECT_DIR$/../hello.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/.idea/uiDesigner.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/json.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/src/main/java/com/json/Book.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/src/main/java/com/json/IsbnDeserializer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/src/main/java/com/json/Main.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/src/main/java/com/json/book.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/src/test/java/com/json/MainTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/target/classes/com/json/Book.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/target/classes/com/json/IsbnDeserializer.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/target/classes/com/json/Main.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../json/target/test-classes/com/json/MainTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xml-jackson/src/main/java/com/school/AnalyseXml.java" beforeDir="false" afterPath="$PROJECT_DIR$/../xml-jackson/src/main/java/com/school/AnalyseXml.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xml-jackson/target/classes/com/school/AnalyseXml.class" beforeDir="false" afterPath="$PROJECT_DIR$/../xml-jackson/target/classes/com/school/AnalyseXml.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +92,9 @@
       <workItem from="1603721907286" duration="228000" />
       <workItem from="1603722666338" duration="148000" />
       <workItem from="1604763585726" duration="43000" />
+      <workItem from="1607677535163" duration="301000" />
+      <workItem from="1608689448418" duration="18000" />
+      <workItem from="1608690033016" duration="32000" />
     </task>
     <servers />
   </component>
