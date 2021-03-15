@@ -194,7 +194,7 @@ byte：-128 ~ 127 // 2^8
 short,char: 2 byte //-32768 ~ 32767
 int,float,boolean: 4 byte //-2147483648 ~ 2147483647, 21个亿
 long,double: 8 byte // -9223372036854775808 ~ 9223372036854775807
-
+String :1汉字 = 2byte, 16bit
 
 关于byte和int之间的联系的理解：
 https://www.cnblogs.com/think-in-java/p/5527389.html
@@ -8028,6 +8028,19 @@ public class App {
 }
 
 
+IOUtils 与 FileUtils
+------------------
+/*
+
+<dependency>
+  <groupId>commons-io</groupId>
+  <artifactId>commons-io</artifactId>
+  <version>2.8.0</version>
+</dependency>
+
+*/
+
+
 保存图片：
 -------
 //获取网络图片通过ImageIO
@@ -8042,3 +8055,448 @@ BufferedImage image = ImageIO.read(response.body());
 BufferedImage image = ImageIO.read(new File("/Users/captain/Desktop/meinv.png"));
 ImageIO.write(image, "png", new File("/Users/captain/Desktop/sansan.png"));
 ImageIO.write(image, "png", new File(savePath));
+
+
+
+
+ProcessBuilder和runtime调用cmd或shell:
+// ------------------------------
+
+/**
+ * public Process exec(String command)-----在单独的进程中执行指定的字符串命令。
+ * public Process exec(String [] cmdArray)---在单独的进程中执行指定命令和变量
+ * public Process exec(String command, String [] envp)----在指定环境的独立进程中执行指定命令和变量
+ * public Process exec(String [] cmdArray, String [] envp)----在指定环境的独立进程中执行指定的命令和变量
+ * public Process exec(String command,String[] envp,File dir)----在有指定环境和工作目录的独立进程中执行指定的字符串命令
+ * public Process exec(String[] cmdarray,String[] envp,File dir)----在指定环境和工作目录的独立进程中执行指定的命令和变量
+ *
+ * Runtime run = Runtime.getRuntime();
+ * Process p = run.exec("ping 127.0.0.1");
+ * InputStream ins= p.getInputStream();
+ * InputStream ers= p.getErrorStream();
+ * 这两个流要用不同的线程去处理，不然容易引发阻塞
+ *
+ * cmd命令执行窗口开闭指令
+ * cmd /c dir 是执行完dir命令后关闭命令窗口。
+ * cmd /k dir 是执行完dir命令后不关闭命令窗口。
+ * cmd /c start dir 会打开一个新窗口后执行dir指令，原窗口会关闭。
+ * cmd /k start dir 会打开一个新窗口后执行dir指令，原窗口不会关闭。
+ * */
+
+
+import java.io.*;
+import java.io.IOException;
+
+public class main {
+    public static void main(String[] args) throws IOException {
+        runtime();
+        processBuilder();
+    }
+
+    static void runtime() throws IOException {
+        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+        Process process;
+        if (isWindows) {
+            process = Runtime.getRuntime().exec("ipconfig");
+        } else {
+            process = Runtime.getRuntime().exec("ifconfig");
+        }
+        InputStream inputStream = process.getInputStream();
+        InputStreamReader isr = new InputStreamReader(inputStream);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+    }
+
+    static void processBuilder() throws IOException {
+        Process process = new ProcessBuilder().command("ifconfig").start();
+        InputStream in = process.getInputStream();
+        StringBuilder sb = new StringBuilder();
+        String line;
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        while ((line = br.readLine()) != null) {
+            sb.append(line + "\n");
+        }
+        String str = sb.toString();
+        System.out.println(str);
+    }
+}
+
+
+
+junit
+-----------
+/*
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+
+
+JUnit介绍
+https://blog.csdn.net/qq_26295547/article/details/83145642
+
+JUnit 所提供的断言方法:
+assertArrayEquals(expecteds, actuals)   查看两个数组是否相等。
+assertEquals(expected, actual)  查看两个对象是否相等。类似于字符串比较使用的equals()方法。
+assertNotEquals(first, second)  查看两个对象是否不相等。
+assertNull(object)  查看对象是否为空。
+assertNotNull(object)   查看对象是否不为空。
+assertSame(expected, actual)    查看两个对象的引用是否相等。类似于使用“==”比较两个对象。
+assertNotSame(unexpected, actual)   查看两个对象的引用是否不相等。类似于使用“!=”比较两个对象。
+assertTrue(condition)   查看运行结果是否为true。
+assertFalse(condition)  查看运行结果是否为false。
+assertThat(actual, matcher) 查看实际值是否满足指定的条件。
+fail()  让测试失败。
+
+
+ @Test 的注解：
+　　1.@Test: 测试方法
+　　　　a)(expected=XXException.class)如果程序的异常和XXException.class一样，则测试通过
+　　　　b)(timeout=100)如果程序的执行能在100毫秒之内完成，则测试通过
+　　2.@Ignore: 被忽略的测试方法：加上之后，暂时不运行此段代码
+　　3.@Before: 每一个测试方法之前运行
+　　4.@After: 每一个测试方法之后运行
+　　5.@BeforeClass: 方法必须必须要是静态方法（static 声明），所有测试开始之前运行，注意区分before，是所有测试方法
+　　6.@AfterClass: 方法必须要是静态方法（static 声明），所有测试结束之后运行，注意区分 @After
+
+*/
+
+//import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNull;
+
+public class JunitDemo1 {
+
+    //assertEquals(expected, actual)查看两个对象是否相等。类似于字符串比较使用的equals()方法。
+    @Test
+    public void test1() {
+        assertEquals(2 + 2, 4);
+    }
+
+
+    //assertArrayEquals(expecteds, actuals) 查看两个数组是否相等。
+    int[] list1 = {1};
+    int[] list2 = {1};
+
+    @Test
+    public void test2() {
+        assertArrayEquals(list1, list2);
+    }
+
+
+    //assertNull(object) 查看对象是否为空
+    String a = null;
+
+    @Test
+    public void test3() {
+        assertNull(a);
+    }
+
+}
+
+
+
+
+//import org.junit.After;
+//import org.junit.AfterClass;
+//import org.junit.Before;
+//import org.junit.BeforeClass;
+//import org.junit.jupiter.api.Test;
+
+import static org.junit.Assert.assertEquals;
+
+
+
+public class JunitDemo2 {
+    @Test
+    public void testAdd() {
+        Count count = new Count();
+        int result = count.add(2, 2);
+        assertEquals(result, 4);
+    }
+
+    @Test(timeout = 10)
+    public void testSub() {
+        Count count = new Count();
+        int result = count.sub(2, 2);
+        assertEquals(result, 0);
+    }
+
+    //在当前测试类开始时运行。
+    @BeforeClass
+    public static void beforeClass() {
+        System.out.println("-------------------beforeClass");
+    }
+
+    //在当前测试类结束时运行。
+    @AfterClass
+    public static void afterClass() {
+        System.out.println("-------------------afterClass");
+    }
+
+    //每个测试方法运行之前运行
+    @Before
+    public void before() {
+        System.out.println("===== each case before");
+    }
+
+    //每个测试方法运行之后运行
+    @After
+    public void after() {
+        System.out.println("===== each case after");
+    }
+
+}
+
+class Count {
+    public int add(int a, int b) {
+        return a + b;
+    }
+
+    public int sub(int a, int b) {
+        return a - b;
+    }
+}
+
+
+
+参数化测试
+----------
+/*
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-params</artifactId>
+    <version>5.2.0</version>
+    <scope>test</scope>
+</dependency>
+————————————————
+
+参数化测试
+https://blog.csdn.net/ryo1060732496/article/details/80823696
+参数化测试使使用不同参数多次运行测试成为可能。它们与常规的@Test方法一样被声明，但是使用 @ParameterizedTest注释。
+此外，您必须声明至少一个源，该源将为每个调用提供参数，然后使用测试方法中的参数。
+@ValueSource –提供对文字值数组（即整数，字符串等）的访问。
+@CsvSource –从一个或多个提供的CSV行中读取逗号分隔值（CSV）
+@CsvFileSource –用于加载逗号分隔值（CSV）文件
+@EnumSource
+@MethodSource
+ */
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+
+
+public class ParameterTest {
+    //@CsvFileSource允许您使用类路径中的CSV文件。CSV文件中的每一行都会调用一次参数化测试。
+    @ParameterizedTest
+    @CsvFileSource(resources = "/ADD.csv", numLinesToSkip = 1, delimiter = ',')
+    //numLinesToSkip忽略几行，delimiter默认为','
+    public void testCsvAdd(int a, int b, int c) {
+        Count count = new Count();
+        int result = count.add(a, b);
+        assertEquals(result, c);
+    }
+
+    //@ValueSource –提供对文字值数组（即整数，字符串等）的访问。
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3})
+    public void testNum(int a) {
+        assertTrue(a > 0);
+    }
+
+    //@CsvSource允许将参数列表表示为逗号分隔的值
+    @ParameterizedTest
+    @CsvSource({"1,2", "5,5"})
+    public void testSub(int a, int b) {
+        Count count = new Count();
+        int result = count.sub(a, b);
+        assertEquals(result, 0);
+    }
+}
+
+
+/*
+测试报告：
+https://blog.csdn.net/AOBO516/article/details/90451236
+Java更好用的测试报告：
+extentreports
+allure2
+*/
+
+
+
+selenium
+-----------
+/*
+<dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>3.141.59</version>
+</dependency>
+
+
+下载谷歌驱动“chromedriver.exe”
+下载地址：https://npm.taobao.org/mirrors/chromedriver/
+java+selenium元素定位和元素操作
+https://www.cnblogs.com/peachh/p/9740001.html
+
+
+   driver.get(Url);//启动浏览器打开url
+   driver.manage().window().maximize(); //浏览器最大化
+　　driver.navigate().to("http://www.baidu.com"); //打开百度
+　　driver.navigate().refresh();//刷新浏览器
+　　driver.navigate().back();//浏览器后退
+　　driver.navigate().forward();//浏览器前进
+　　driver.close();//关闭当前页面
+　　driver.quit();//关闭所有窗口
+
+
+    getText(): 获取元素的visible内嵌文字。
+    getAttribute(String name)：获取元素中名为name的属性的值。
+      <input attr1='a'>foo</input>
+    getAttribute(attr1) 你得到’a’
+    getText() 没有参数，你只能得到’foo’
+ */
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class seleniumDemo {
+    public static void main(String[] args) throws InterruptedException {
+        testSelenium();
+    }
+    public static String testSelenium() throws InterruptedException {
+        String re;
+        System.setProperty("webdriver.chrome.driver", "/Users/captain/Downloads/pkg/chromedriver");
+        WebDriver driver = new ChromeDriver();
+        String url = "http://www.baidu.com";
+        driver.get(url);
+        driver.findElement(By.id("kw")).sendKeys("渣男");
+        driver.findElement(By.id("su")).click();
+        Thread.sleep(3);
+        re = driver.findElement(By.xpath("//*[@id=\"u\"]/a[3]")).getAttribute("href");
+        Thread.sleep(3000);
+        driver.close();
+        driver.quit();
+        return re;
+
+    }
+}
+
+
+
+log4j
+--------
+/*
+https://www.scalyr.com/blog/maven-log4j2-project/
+
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.14.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.14.0</version>
+    </dependency>
+
+
+*/
+
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class seleniumDemo {
+    private static final Logger logger = LogManager.getLogger(seleniumDemo.class); //类前声明
+
+    public static void main(String[] args) throws InterruptedException {
+        // main中使用
+        logger.trace("We've just greeted the user!");
+        logger.debug("We've just greeted the user!");
+        logger.info("We've just greeted the user!");
+        logger.warn("We've just greeted the user!");
+        logger.error("We've just greeted the user!");
+        logger.fatal("We've just greeted the user!");
+    }
+}
+
+
+log4j2.xml
+------------
+/*
+1.可以分开定义输出和日志的格式，和日志等级，也可以统一定义
+2.可以把所有日志写入到一个文件，也可以进行分片
+*/
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+        <File name="FileAppender" fileName="application-${date:yyyyMMdd}.log" immediateFlush="false" append="true">
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="ConsoleAppender" />
+            <AppenderRef ref="FileAppender" />
+        </Root>
+    </Loggers>
+</Configuration>
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <!-- 定义日志格式 -->
+        <Property name="log.pattern">%d{MM-dd HH:mm:ss.SSS} [%t] [%-5level] %logger{36} line:%L %M: %msg%n%n</Property>
+        <!-- 定义文件名变量 -->
+        <Property name="file.err.filename">log/err.log</Property>
+        <Property name="file.err.pattern">log/err.%i.log.gz</Property>
+    </Properties>
+    <!-- 定义Appender，即目的地 -->
+    <Appenders>
+        <!-- 定义输出到屏幕 -->
+        <Console name="console" target="SYSTEM_OUT">
+            <!-- 日志格式引用上面定义的log.pattern -->
+            <PatternLayout pattern="${log.pattern}" />
+        </Console>
+        <!-- 定义输出到文件,文件名引用上面定义的file.err.filename -->
+        <RollingFile name="err" bufferedIO="true" fileName="${file.err.filename}" filePattern="${file.err.pattern}">
+            <PatternLayout pattern="${log.pattern}" />
+            <Policies>
+                <!-- 根据文件大小自动切割日志 -->
+                <SizeBasedTriggeringPolicy size="1 MB" />
+            </Policies>
+            <!-- 保留最近10份 -->
+            <DefaultRolloverStrategy max="10" />
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <!-- 对info级别的日志，输出到console -->
+            <AppenderRef ref="console" level="debug" />
+            <!-- 对error级别的日志，输出到err，即上面定义的RollingFile -->
+            <AppenderRef ref="err" level="info" />
+        </Root>
+    </Loggers>
+</Configuration>

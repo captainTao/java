@@ -1,0 +1,15 @@
+
+2021-03-15 16:49:50.302 [main] INFO  org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 16:49:50.302 [main] WARN  org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 16:49:50.302 [main] ERROR org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 16:49:50.303 [main] FATAL org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 16:50:12.410 [main] DEBUG org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 16:50:12.413 [main] INFO  org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 16:50:12.413 [main] WARN  org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 16:50:12.413 [main] ERROR org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 16:50:12.414 [main] FATAL org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 17:01:04.319 [main] DEBUG org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 17:01:04.323 [main] INFO  org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 17:01:04.323 [main] WARN  org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 17:01:04.323 [main] ERROR org.junit.seleniumDemo - We've just greeted the user!
+2021-03-15 17:01:04.323 [main] FATAL org.junit.seleniumDemo - We've just greeted the user!
