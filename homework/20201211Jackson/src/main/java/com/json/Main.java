@@ -11,12 +11,13 @@ import java.io.InputStream;
 /**
  *
  * getResourceAsStream获取不到文件？？
+ * 需要建立resources文件夹
  */
 public class Main
 {
     public static void main( String[] args ) throws IOException {
-//         InputStream input = Main.class.getResourceAsStream("book.json");
-        InputStream input = new FileInputStream("/Users/captain/Desktop/Jackson/src/main/java/com/json/book.json");
+        InputStream input = Main.class.getResourceAsStream("/book.json");
+        // InputStream input = new FileInputStream("/Users/captain/Desktop/Jackson/src/main/java/com/json/book.json");
         System.out.println(input);
 
         ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
