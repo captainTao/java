@@ -2,6 +2,8 @@ package org.junit;
 
 //import org.junit.jupiter.api.Test;
 
+import org.junit.runners.MethodSorters;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNull;
@@ -18,8 +20,13 @@ import static org.junit.Assert.assertNull;
     assertFalse(condition)	查看运行结果是否为false。
     assertThat(actual, matcher)	查看实际值是否满足指定的条件。
     fail()	让测试失败。
-     */
 
+    指定执行顺序：
+    @FixMethodOrder(MethodSorters.DEFAULT)  默认，但不可预期
+    @FixMethodOrder(MethodSorters.JVM)   按JVM得到的顺序
+    @FixMethodOrder(MethodSorters.NAME_ASCENDING)   按方法字母顺序执行
+     */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JunitDemo1 {
 
     //assertEquals(expected, actual)查看两个对象是否相等。类似于字符串比较使用的equals()方法。

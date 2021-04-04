@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 /*
  @Test 的注解：
 　　1.@Test: 测试方法
-　　　　a)(expected=XXException.class)如果程序的异常和XXException.class一样，则测试通过
+　　　　a)(expected=XXException.class)如果程序的异常和XXException.class一样，则测试通过 例expected=ArithmeticException.class
 　　　　b)(timeout=100)如果程序的执行能在100毫秒之内完成，则测试通过
 　　2.@Ignore: 被忽略的测试方法：加上之后，暂时不运行此段代码
 　　3.@Before: 每一个测试方法之前运行
