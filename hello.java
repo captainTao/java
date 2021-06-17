@@ -5733,6 +5733,26 @@ public class Main {
 }
 
 
+import java.text.SimpleDateFormat;
+
+public class testMain {
+    public static void main(String[] args) {
+        java.util.Date dateNow = new java.util.Date();
+        
+        SimpleDateFormat sy1=new SimpleDateFormat("yyyyMMdd");
+        String dateFormat=sy1.format(dateNow);
+        System.out.println(dateFormat); // 20210505
+
+        // 如果希望分开得到年，月，日
+        SimpleDateFormat sy=new SimpleDateFormat("yyyy");
+        SimpleDateFormat sm=new SimpleDateFormat("MM");
+        SimpleDateFormat sd=new SimpleDateFormat("dd");
+        String syear=sy.format(dateNow); // 2021
+        String smon=sm.format(dateNow); // 05
+        String sday=sd.format(dateNow); //05
+    }
+}
+
 
 /*
 Maven:
