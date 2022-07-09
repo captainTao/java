@@ -425,7 +425,7 @@ double score = Double.parseDouble(sscore);
 
 //方法二
 int a = Integer.valueOf(s).intValue();
-nteger.parseInt(String s);
+integer.parseInt(String s);
 
 
 
@@ -534,7 +534,7 @@ num is {003.140}
 .3 num is 3.142
 9.99 num is 10.00
    
- */
+*/
 
 public class MainClass {
   public static void main(String args[]) throws Exception {
