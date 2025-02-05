@@ -71,17 +71,13 @@ public class Json {
    * remove specific key of json string by keys list
    * */
   @Keyword
-  static String removeKeyPathFromJsonByList(String jsonStr, List<String> keyPathsToRemove, Boolean pretty = true) {
-    def jsonObj = new JsonSlurper().parseText(jsonStr)
+  static Object removeKeyPathFromJsonByList(Map jsonObj, List<String> keyPathsToRemove) {
+    println("keyPathsToRemove = $keyPathsToRemove")
     keyPathsToRemove.each { keyPath ->
       def keyParts = keyPath.split("\\.")
       removeKeyPathRecursively(jsonObj, keyParts, 0)
     }
-    def jsonOutString = JsonOutput.toJson(jsonObj)
-    if (pretty) {
-      return JsonOutput.prettyPrint(jsonOutString)
-    }
-    return jsonOutString
+    return jsonObj
   }
 
 
@@ -89,15 +85,11 @@ public class Json {
    * remove specific key of json string by key string
    * */
   @Keyword
-  static String removeKeyPathFromJson(String jsonStr, String keyPathToRemove, Boolean pretty = true) {
-    def jsonObj = new JsonSlurper().parseText(jsonStr)
+  static Object removeKeyPathFromJson(Map jsonObj, String keyPathToRemove) {
+    println("keyPathToRemove = $keyPathToRemove")
     def keyParts = keyPathToRemove.split("\\.")
     removeKeyPathRecursively(jsonObj, keyParts, 0)
-    def jsonOutString = JsonOutput.toJson(jsonObj)
-    if (pretty) {
-      return JsonOutput.prettyPrint(jsonOutString)
-    }
-    return jsonOutString
+    return jsonObj
   }
 
   /**

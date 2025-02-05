@@ -506,6 +506,103 @@ public class Main {
  */
 
 
+// List<String[]> 和 String[][]
+--------------------------------
+// List<String[]>长度可变，String[][]长度固定
+// List 提供的丰富方法，如 add、remove、set 等对元素进行增删改操作
+
+// list.get(0)[0]
+import java.util.ArrayList;
+import java.util.List;
+
+public class ListAccessExample {
+    public static void main(String[] args) {
+        List<String[]> list = new ArrayList<>();
+        list.add(new String[]{"apple", "banana"});
+        String element = list.get(0)[0];
+        System.out.println(element); 
+    }
+}
+
+// 访问元素：array[row][column]
+public class ArrayAccessExample {
+    public static void main(String[] args) {
+        String[][] array = {{"apple", "banana"}};
+        String element = array[0][0];
+        System.out.println(element); 
+    }
+}
+
+// 初始化List<String[]>
+-----------------------
+// 方法一：初始化空列表，逐个添加
+import java.util.ArrayList;
+import java.util.List;
+
+public class DefineEmptyListOfStringArrays {
+    public static void main(String[] args) {
+        // 定义一个存储 String[] 类型元素的空列表
+        List<String[]> list = new ArrayList<>();
+        // 可以后续向列表中添加字符串数组元素
+        String[] array1 = {"apple", "banana"};
+        list.add(array1);
+        String[] array2 = {"cherry", "date"};
+        list.add(array2);
+
+        // 遍历列表并输出元素
+        for (String[] array : list) {
+            for (String element : array) {
+                System.out.print(element + " ");
+            }
+            System.out.println();
+        }
+    }
+}
+
+// 方法二：初始化添加
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class InitializeListWithElements {
+    public static void main(String[] args) {
+        // 定义并初始化一个包含字符串数组的列表
+        List<String[]> list = new ArrayList<>();
+        list.add(new String[]{"red", "green", "blue"});
+        list.add(new String[]{"one", "two", "three"});
+
+        // 遍历列表并输出元素
+        for (String[] array : list) {
+            for (String element : array) {
+                System.out.print(element + " ");
+            }
+            System.out.println();
+        }
+    }
+}
+// 方法三：使用java8 API
+// Arrays.stream(array).collect(Collectors.toList())
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class InitializeListWithStream {
+    public static void main(String[] args) {
+        // 使用 Stream API 初始化列表
+        List<String[]> list = Arrays.stream(new String[][]{
+                {"cat", "dog"},
+                {"fish", "bird"}
+        }).collect(Collectors.toList());
+
+        // 遍历列表并输出元素
+        list.forEach(array -> {
+            Arrays.stream(array).forEach(element -> System.out.print(element + " "));
+            System.out.println();
+        });
+    }
+}
+
 
 
 

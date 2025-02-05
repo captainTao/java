@@ -26,7 +26,7 @@ import groovy.json.JsonOutput
 import com.kms.katalon.core.testobject.ResponseObject
 import com.kms.katalon.core.testobject.HttpBodyContent
 import com.kms.katalon.core.testobject.impl.HttpTextBodyContent
-
+import org.apache.http.client.utils.URIBuilder
 import internal.GlobalVariable
 
 public class Http {
@@ -54,11 +54,27 @@ public class Http {
 		return headerMap
 	}
 
+	/**
+	 * update request Header by part HeaderMap and request
+	 */
+	@Keyword
+	def String updateAndRequest(RequestObject request, Map headers = null, Map body = null) {
+		def headerMap = null
+		if (headers != null) {
+			headerMap = getRequestHeader(request)
+			headers.each { key, value ->
+				headerMap[key] = value
+			}
+		}
+		return sendRequest(request, headers= headerMap, body = body)
+	}
+
 
 	/**
 	 * send HttpRequest with request Object
 	 * */
-	def String sendRequest(TestObject request, Map headers = null, Map body = null) {
+	@Keyword
+	def Object sendRequest(TestObject request, Map headers = null, Map body = null) {
 		if(headers != null) {
 			List<TestObjectProperty> headerList = []
 			println("headers = $headers")
@@ -76,54 +92,58 @@ public class Http {
 		def response = WS.sendRequest(request)
 		println("Response Status: " + response.getStatusCode())
 		println("Response Body: " + response.getResponseBodyContent())
-		return response.getResponseBodyContent()
+		return response
 	}
 
 
-	/**
-	 * update or set request Header by HashMap
-	 */
-	@Keyword
-	def String updateAndRequest(RequestObject request, Map headers = null, Map body = null) {
-		def headerMap = null
-		if (headers != null) {
-			headerMap = getRequestHeader(request)
-			headers.each { key, value ->
-				headerMap[key] = value
-			}
-		}
-		return sendRequest(request, headers= headerMap, body = body)
-	}
 
 
 	/**
 	 * send HttpRequest with url
 	 * */
 	@Keyword
-	def String sendHttpRequest(String url, String method, Map<String, String> headers, Map<String, Object> body) {
+	def Object sendHttpRequest(String url, String method, Map<String, String> headers=null, Map<String, Object> params=null, Map<String, Object> body=null) {
 		RequestObject request = new RequestObject()
+		if (params != null) {
+			List<String> query = []
+			params.each{ key, value ->
+				query.add("$key=$value")
+			}
+			url = url + "?" + query.join("&")
+		}
 		println("url = $url")
 		request.setRestUrl(url)
 		println("method = $method")
 		request.setRestRequestMethod(method.toUpperCase())
 
-		List<TestObjectProperty> headerList = []
-		println("headers = $headers")
-		headers.each { key, value ->
-			headerList.add(new TestObjectProperty(key, ConditionType.EQUALS, value))
+		if (headers != null) {
+			List<TestObjectProperty> headerList = []
+			println("headers = $headers")
+			headers.each { key, value ->
+				headerList.add(new TestObjectProperty(key, ConditionType.EQUALS, value))
+			}
+			request.setHttpHeaderProperties(headerList)
 		}
-		request.setHttpHeaderProperties(headerList)
 
 		println("request body = $body")
 		if (body && (method.toUpperCase() == 'POST' || method.toUpperCase() == 'PUT')) {
 			String jsonBody = new groovy.json.JsonBuilder(body).toPrettyString()
 			request.setBodyContent(new HttpTextBodyContent(jsonBody, 'UTF-8', 'application/json'))
-			//			request.setHttpBody(jsonBody)
 		}
 
 		def response = WS.sendRequest(request)
 		println("Response Status: " + response.getStatusCode())
 		println("Response Body: " + response.getResponseBodyContent())
-		return response.getResponseBodyContent()
+		return response
+	}
+
+	static void main(String[] args) {
+		def url = 'https://jsonplaceholder.typicode.com/posts'
+		def method = 'POST'
+		def headers = ['Content-Type': 'application/json']
+		def body = ['title': 'Groovy Request', 'body': 'This is a test request', 'userId': 1]
+		Http http = new Http()
+		def response = http.sendHttpRequest(url, method, headers, body)
+		println("API Response: " + response)
 	}
 }
