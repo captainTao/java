@@ -157,7 +157,64 @@ f.接口中的字段是public statc final类型，而抽象类中的字段可以
 // 具体的代码格式要求可以在Eclipse的设置中Java-Code Style查看
 
 
+-----------------------------------------------------------------------------
+java类：
 
+1. 基础类（java.lang）
+这些类是 Java 的核心，使用时不需要导入。
+类名  用途
+String  字符串处理
+StringBuilder / StringBuffer    可变字符串
+Math    数学运算
+Object  所有类的父类
+System  系统相关功能（如输入输出）
+Runtime 运行时环境信息
+Thread  多线程编程
+Exception / Throwable   异常处理
+
+2. 数学与大数（java.math）
+类名  用途
+BigInteger  任意精度整数
+BigDecimal  任意精度小数
+
+3. 集合框架（java.util）
+类名  用途
+ArrayList / LinkedList  列表
+HashMap / TreeMap   键值对映射
+HashSet / TreeSet   集合（不重复元素）
+Collections 集合工具类
+Arrays  数组工具类
+
+4. 日期与时间（java.time）
+类名  用途
+LocalDate   表示日期（无时间）
+LocalTime   表示时间（无日期）
+LocalDateTime   日期 + 时间
+ZonedDateTime   带时区的日期时间
+DateTimeFormatter   日期时间格式化
+
+5. 输入输出（java.io & java.nio）
+类名  用途
+File    文件操作
+FileReader / FileWriter 字符流读写
+BufferedReader / BufferedWriter 缓冲字符流
+InputStream / OutputStream  字节流
+Files   文件工具类（NIO）
+Paths / Path    路径处理（NIO）
+
+6. 网络编程（java.net）
+类名  用途
+URL 处理网络地址
+Socket / ServerSocket   网络通信
+HttpURLConnection   HTTP 请求
+
+7. 实用工具类
+类名  用途
+Scanner 控制台输入
+Random  随机数生成
+UUID    唯一标识符生成
+Properties  配置文件读取
+-----------------------------------------------------------------------------
 public class Hello { // Hello,表示类，首字母要大写, class名称和文件名要完全一致
     // Java入口程序规定的方法必须是静态方法，方法名必须为main，括号内的参数必须是String数组。
     // 方法名也有命名规则，命名和class一样，但是首字母小写
@@ -186,7 +243,6 @@ public class Main {
   java xx.java （java11及以上才支持）
   javac xx.java ----> xx.class  ----> java xx (xx.class)
 */
-
 
 // 对于float类型，需要加上f后缀。
 float f1 = 3.14f;
@@ -266,6 +322,28 @@ double d3 = -1.0 / 0; // -Infinity
 
 如果要进行四舍五入，可以对浮点数加上0.5,再强制转型为整型
 
+
+四舍五入：
+----------
+用Math.round()
+double value = 3.14859;
+String formattedValue = String.format("%.2f", value); // 四舍五入到两位小数
+System.out.println(formattedValue); // 输出：3.14
+
+用bigdecimal的setScale
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+System.out.println(BigDecimal.valueOf(5.7583456).setScale(2, RoundingMode.FLOOR));
+
+collectEntries
+------------------------
+Map currentAccountValueMapPe = WebUI.callTestCase(findTestCase('Tools/PolicyInvestmentChange/GetAccountValue'), [('policyNum') : policyNum, ('triggerDate') : effectiveDateAT], FailureHandling.STOP_ON_FAILURE)
+def currentAccountValueMap = currentAccountValueMapPe.collectEntries{
+    key, value ->
+    [('currentAccountValue' + key): value]
+}
+
+
 boolean运算：
 比较运算符：>，>=，<，<=，==，!=
 与运算 &&
@@ -283,6 +361,9 @@ boolean运算：
 false && x
 三元：
 b ? x : y
+// 比较大小
+int result = x.compareTo(y);
+System.out.println("比较: " + (result > 0 ? "x > y" : result < 0 ? "x < y" : "x = y"));
 
 \n 表示换行符
 \r 表示回车符
@@ -1696,6 +1777,119 @@ public class stringOrder {
 }
 
 
+Instant
+--------------
+import java.time.Instant;
+
+表示的是一个时间戳（timestamp），精确到纳秒。
+不包含时区信息，始终以 UTC 表示。
+System.out.println(Instant.parse( "2025-04-01T04:00:00+00:00"));
+String now = Instant.now().toString();
+System.out.println(now);
+System.out.println(Instant.parse(now));
+
+常用方法  说明
+Instant.now()   获取当前时间的 Instant
+Instant.parse(String)   从字符串解析 Instant
+instant.toEpochMilli()  转换为自1970年1月1日以来的毫秒数
+instant.plus(Duration)  增加一段时间
+instant.minus(Duration) 减少一段时间
+instant.isBefore(Instant)   判断是否在另一个时间点之前
+instant.isAfter(Instant)    判断是否在另一个时间点之后
+
+long timestamp = Instant.now().toEpochMilli();
+System.out.println("当前时间戳（毫秒）: " + String.valueOf(timestamp));
+
+JsonPath
+---------------------------------
+表达式       说明
+$           根对象
+.           点操作符，访问子属性
+[]          用于访问数组或属性
+*           通配符，匹配所有元素
+..          递归下降，匹配任意层级的属性
+[n]         数组索引
+[start:end] 数组切片
+[?(<expr>)] 过滤器表达式
+
+
+$[?(@.<字段> <比较符> <值>)]
+------------------------------
+@：表示当前数组中的每个元素。
+<字段>：要比较的字段名。
+<比较符>：如 ==, !=, >, <, >=, <=。
+<值>：用于比较的值。
+
+expr支持的操作符
+比较：==, !=, <, >, <=, >=
+正则匹配：=~（例如 @.title =~ /Book.*/）
+逻辑运算：&&, ||
+
+public static void test2(){
+    String jsonString = "{\n" +
+            "  \"user\": [\n" +
+            "    {\n" +
+            "      \"name\": \"John\",\n" +
+            "      \"gender\": \"girl\"\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"name\": \"bob\",\n" +
+            "      \"gender\": \"boy\"\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}";
+    // 这种parse不支持新增，只支持读和修改
+    DocumentContext js = JsonPath.parse(jsonString);
+    System.out.println(js.jsonString());
+
+    // 配置 JsonPath, 这种parse可以支持新增,删除
+    Configuration conf = Configuration.defaultConfiguration()
+            .addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL)
+            .addOptions(Option.SUPPRESS_EXCEPTIONS);
+    // 解析 JSON 字符串
+    DocumentContext jsonBody = JsonPath.using(conf).parse(jsonString);
+    // 添加新字段
+    jsonBody.set("$.user[0].age", 30);
+    // 删除
+    jsonBody.delete("$.user[0].name");
+    jsonBody.delete("$..gender");
+    // 将更新后的 JSON 转换为字符串
+    System.out.println(jsonBody.jsonString()); // 输出: {"user":[{"age":30},{"name":"bob"}]}
+
+}
+
+
+过滤器：
+updateRequestBodyMap.put(String.format('$..[?(@.accountCode==\'%s\')].percentage', ac), 
+    ((new BigDecimal(transfer[ac]) * 100) / new BigDecimal(currentAccountValueMapPe[ac])).setScale(2, RoundingMode.HALF_UP))
+
+Optional
+-------------
+/*
+避免显式的 null 检查，从而减少 NullPointerException 的风险
+
+Optional.of(value)  创建一个非空的 Optional，值不能为 null
+Optional.ofNullable(value)  创建一个可能为空的 Optional
+Optional.empty()    创建一个空的 Optional
+*/
+Optional<String> name = Optional.of("Alice");
+
+// 1. 判断是否有值
+if (name.isPresent()) {
+    System.out.println(name.get());
+}
+
+// 2. 更推荐的写法
+name.ifPresent(System.out::println);
+
+// 3. 提供默认值
+String result = name.orElse("Default Name");
+
+// 4. 使用 map 转换值
+Optional<Integer> length = name.map(String::length);
+
+// 5. 过滤值
+Optional<String> filtered = name.filter(n -> n.startsWith("A"));
 
 // 包装类型
 // -----------------
@@ -2169,6 +2363,72 @@ public class Main {
 
 
 // BigInteger和BigDecimal
+// BigInteger常用方法
+add(BigInteger val)
+subtract(BigInteger val)
+multiply(BigInteger val)
+divide(BigInteger val)
+mod(BigInteger val)
+pow(int exponent)
+gcd(BigInteger val)
+
+// BigDecimal常用方法
+add(BigDecimal val)
+subtract(BigDecimal val)
+multiply(BigDecimal val)
+divide(BigDecimal val, int scale, RoundingMode roundingMode)
+setScale(int newScale, RoundingMode roundingMode)
+compareTo(BigDecimal val)
+
+public static void main(String[] args) {
+    BigDecimal num1 = new BigDecimal("10.25");
+    BigDecimal num2 = new BigDecimal(100);
+    BigDecimal num3 = BigDecimal.valueOf(-5.7583456);
+    System.out.println(num1);
+    System.out.println(num2);
+    System.out.println(num3);
+    System.out.println(num1.add(num2).add(num3));
+    System.out.println(num3.setScale(2, RoundingMode.FLOOR));
+    testBigIntegerExample();
+    testBigDecimalExample();
+}
+
+public static void testBigIntegerExample() {
+    BigInteger a = new BigInteger("12345678901234567890");
+    BigInteger b = new BigInteger("98765432109876543210");
+    // 加法
+    System.out.println("加法: " + a.add(b));
+    // 减法
+    System.out.println("减法: " + b.subtract(a));
+    // 乘法
+    System.out.println("乘法: " + a.multiply(b));
+    // 除法
+    System.out.println("除法: " + b.divide(a));
+    // 取模
+    System.out.println("模: " + b.mod(a));
+    // 幂运算
+    System.out.println("幂: " + a.pow(2));
+    // 最大公约数
+    System.out.println("GCD: " + a.gcd(b));
+}
+
+public static void testBigDecimalExample() {
+    BigDecimal x = new BigDecimal("19.3455699");
+    BigDecimal y = new BigDecimal("3");
+    // 加法
+    System.out.println("加法: " + x.add(y));
+    // 减法
+    System.out.println("减法: " + x.subtract(y));
+    // 乘法
+    System.out.println("乘法: " + x.multiply(y));
+    // 除法（保留2位小数，四舍五入）
+    System.out.println("除法: " + x.divide(y, 2, RoundingMode.HALF_UP));
+    // 设置小数位数
+    System.out.println("设置小数位数: " + x.setScale(3, RoundingMode.FLOOR));
+    // 比较大小
+    int result = x.compareTo(y);
+    System.out.println("比较: " + (result > 0 ? "x > y" : result < 0 ? "x < y" : "x = y"));
+}
 
 /*
 Math类：
@@ -2229,6 +2489,8 @@ public void setSeed(long seed)  // 跟new Random(long seed)一致，设定seed�
 // SecureRandom类：
 // ---------------
 // 必须使用SecureRandom来产生安全的随机数。
+System.out.println(new SecureRandom().nextInt(10)); //随机[0,10)以内的整数
+
 
 // SecureRandom sr = new SecureRandom();
 // System.out.println(sr.nextInt(100));
@@ -3293,6 +3555,46 @@ boolean mkdirs()：创建当前File对象表示的目录，并在必要时将不
 boolean delete()：删除当前File对象表示的目录，当前目录必须为空才能删除成功。
 
 
+
+
+查找大文件：
+-------------
+import java.io.File;
+public static void findMaxFiles() {
+    // 指定要检查的目录路径
+    String directoryPath = "C:\\Users\\wanhait\\Documents\\regional_uip_automation_test_katalon";
+    // 设置文件大小阈值为6MB
+    long sizeThreshold = 6 * 1024 * 1024;
+
+    // 创建文件对象
+    File directory = new File(directoryPath);
+    if (directory.exists() && directory.isDirectory()) {
+        // 调用方法查找大文件
+        findLargeFiles(directory, sizeThreshold);
+    } else {
+        System.out.println("指定的路径不是一个有效的目录。");
+    }
+
+}
+
+public static void findLargeFiles(File directory, long sizeThreshold) {
+    // 获取目录下的所有文件和子目录
+    File[] files = directory.listFiles();
+    if (files != null) {
+        for (File file : files) {
+            if (file.isFile()) {
+                // 检查文件大小是否超过阈值
+                if (file.length() > sizeThreshold) {
+                    double fileSizeInMB = file.length() / (1024.0 * 1024.0);
+                    System.out.println("大文件路径: " + file.getAbsolutePath() + "，大小: " + String.format("%.2f", fileSizeInMB) + " MB");
+                }
+            } else if (file.isDirectory()) {
+                // 递归检查子目录
+                findLargeFiles(file, sizeThreshold);
+            }
+        }
+    }
+}
 
 
 /*
