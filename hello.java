@@ -215,6 +215,15 @@ Random  随机数生成
 UUID    唯一标识符生成
 Properties  配置文件读取
 -----------------------------------------------------------------------------
+import java.util.UUID;
+
+public class Main {
+    public static void main(String[] args) {
+        UUID uuid = UUID.randomUUID();
+        System.out.println(uuid.toString());
+    }
+}
+
 public class Hello { // Hello,表示类，首字母要大写, class名称和文件名要完全一致
     // Java入口程序规定的方法必须是静态方法，方法名必须为main，括号内的参数必须是String数组。
     // 方法名也有命名规则，命名和class一样，但是首字母小写
@@ -343,6 +352,15 @@ def currentAccountValueMap = currentAccountValueMapPe.collectEntries{
     [('currentAccountValue' + key): value]
 }
 
+根据list来初始化一个map:
+List<String> accountList = JsonUtil.getAccountList()
+if (transfer.isEmpty()) {
+    transfer = accountList.collectEntries{[(it): 0]}
+}
+
+def currentAccountValueMap = currentAccountValueMapPe.collectEntries({ def key, def value ->
+        [('currentAccountValue' + key) : value]
+    })
 
 boolean运算：
 比较运算符：>，>=，<，<=，==，!=
@@ -687,9 +705,9 @@ public class InitializeListWithStream {
 
 
 
-输出:
-_________
-print，println，printf（可以格式化输出）
+// 输出:
+--------------------------------
+// print，println，printf（可以格式化输出）
 
 double d = 3.1415926;
 System.out.printf("%.4f\n", d); // 显示4位小数3.1416
@@ -702,17 +720,12 @@ System.out.printf("n=%d, hex=%08x", n, n); // 注意，两个%占位符必须传
 %e  格式化输出科学计数法表示的浮点数
 %s  格式化字符串
 */
-
-/**
- * Output:
- 
+// Output:
 num is 3.141593
 num is {003.140}
 06.3 num is 03.142
 .3 num is 3.142
 9.99 num is 10.00
-   
-*/
 
 public class MainClass {
   public static void main(String args[]) throws Exception {
@@ -726,7 +739,7 @@ public class MainClass {
 
 
 输入:
-_________
+---------------------------
 
 import java.util.Scanner;
 public class Main {
@@ -1697,6 +1710,28 @@ String[] names = {"Bob", "Alice", "Grace"};
 var s = String.join(", ", names);
 
 
+// 字符串输出 MessageFormat：
+import java.text.MessageFormat;
+
+String pattern = "Hello, {0}. You are {1} years old.";
+String msg = MessageFormat.format(pattern, "David", 40);
+System.out.println(msg);
+
+// 字符串输出 java8 Stream 
+List<String> items = Arrays.asList("A", "B", "C");
+String result = items.stream().collect(Collectors.joining("-"));
+System.out.println(result);  // 输出：A-B-C
+
+// 字符串输出 String.format
+String name = "Bob";
+int age = 25;
+System.out.println(String.format("Name: %s, Age: %d", name, age));
+
+// 字符串输出 +
+String name = "Alice";
+System.out.println("Hello, " + name + "!");
+
+
 // 字符串反向输出
 ---------------
 import java.util.Scanner;
@@ -1791,7 +1826,8 @@ System.out.println(Instant.parse(now));
 常用方法  说明
 Instant.now()   获取当前时间的 Instant
 Instant.parse(String)   从字符串解析 Instant
-instant.toEpochMilli()  转换为自1970年1月1日以来的毫秒数
+Instant.now().toEpochMilli()  转换为自1970年1月1日以来的毫秒数
+Instant.now().getEpochSecond() 秒级，10位
 instant.plus(Duration)  增加一段时间
 instant.minus(Duration) 减少一段时间
 instant.isBefore(Instant)   判断是否在另一个时间点之前
@@ -1813,8 +1849,11 @@ $           根对象
 [?(<expr>)] 过滤器表达式
 
 
-$[?(@.<字段> <比较符> <值>)]
-------------------------------
+$.store.book[?(@.<字段> <比较符> <值>)]
+例如： 
+$.store.book[?(@.price > 10)]
+
+--------------------------------------
 @：表示当前数组中的每个元素。
 <字段>：要比较的字段名。
 <比较符>：如 ==, !=, >, <, >=, <=。
