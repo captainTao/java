@@ -9048,3 +9048,90 @@ log4j2.xml
         </Root>
     </Loggers>
 </Configuration>
+
+
+log4j and Logback
+-----------------
+maven:
+<!-- SLF4J API -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.17</version>
+    </dependency>
+    <!-- Logback -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.5.18</version>
+    </dependency>
+
+配置文件： resources/logback.xml
+<configuration>
+    <!-- 控制 MongoDB 驱动日志级别 -->
+    <logger name="org.mongodb.driver" level="WARN"/>
+    <logger name="org.mongodb.driver.cluster" level="WARN"/>
+    <logger name="org.mongodb.driver.connection" level="WARN"/>
+    <logger name="org.mongodb.driver.protocol" level="WARN"/>
+    <logger name="org.mongodb.driver.operation" level="WARN"/>
+
+    <!-- 根日志级别（你自己的应用日志） -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+</configuration>
+
+
+日志级别
+TRACE：最详细的跟踪信息，通常只在深度排查问题时开启。
+DEBUG：调试信息，开发环境常用，记录内部状态变化。
+INFO：重要运行信息，面向正常用户操作与系统状态。
+WARN：警告信息，提示潜在问题或非预期但不致命的情况。
+ERROR：错误信息，表示功能失败或严重问题。
+OFF：关闭日志输出（Logback里可以通过过滤器或不配置来达到类似效果）。
+
+输出到文件： 生产环境建议：
+
+<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/app.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <fileNamePattern>logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+        <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+</appender>
+
+<root level="WARN">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+</root>
+
+
+Predicate使用
+-----------------
+Predicate的返回类型为boolean, 
+java.util.function.Predicate<T> // 方法：boolean test(T t)
+
+
+
+// 1) Function：输入 String，返回 Boolean
+Function<String, Boolean> containsSuccess =
+    s -> s != null && s.contains("SUCCESS");
+
+// 2) Predicate：输入 String，返回 boolean（更语义化）
+Predicate<String> containsSuccess2 =
+    s -> s != null && s.contains("SUCCESS");
+``
+
+调用：
+containsSuccess.apply("job status: SUCCESS");  // 返回 Boolean
+containsSuccess2.test("job status: SUCCESS");  // 返回 boolean
