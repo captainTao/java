@@ -9135,3 +9135,444 @@ Predicate<String> containsSuccess2 =
 调用：
 containsSuccess.apply("job status: SUCCESS");  // 返回 Boolean
 containsSuccess2.test("job status: SUCCESS");  // 返回 boolean
+
+
+// 更新mongodb
+
+方式                  场景                    需要 UpdateOptions
+items.$.field        匹配第一个符合条件的元素    否
+items.$[].field      更新所有元素               否
+items.$[elem].field  按条件过滤多个元素         是（传 arrayFilters）
+items.0.field        已知下标                   否
+
+/*
+    * 更新特定位置
+        collection.updateOne(
+        Filters.eq("_id", docId),
+        Updates.set("items.0.status", "completed")
+        )
+        *
+      更新所有位置
+        collection.updateOne(
+        Filters.eq("_id", docId),
+        Updates.set("items.$[].status", "completed")
+        )
+        *
+       通过条件过滤更新
+        collection.updateOne(
+        Filters.eq("_id", docId),
+        Updates.set("items.\$[elem].status", "completed"),
+        new UpdateOptions().arrayFilters([
+            Filters.eq("elem.itemId", "A001")
+        ])
+ * */
+
+
+ import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.Updates;
+import com.mongodb.connection.ClusterType;
+import org.bson.BsonType;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.time.Instant;
+import java.util.*;
+import com.mongodb.MongoException;
+import com.mongodb.ReadPreference;
+import javax.print.Doc;
+
+public class MongoDBHelper {
+    private static volatile MongoDBHelper INSTANCE;
+    private static volatile MongoClient mongoClient;
+    private MongoDatabase database;
+    private MongoCollection<Document> collection;
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(MongoDBHelper::close));
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            System.err.printf("Uncaught exception in thread %s: %s%n",thread.getName(), throwable);
+            close();
+        });
+    }
+
+    public static MongoDBHelper getInstance(String uri, String databaseName){
+        if(INSTANCE ==null){
+            synchronized (MongoDBHelper.class){
+                if(INSTANCE == null){
+                    INSTANCE = new MongoDBHelper(uri, databaseName);
+                }
+            }
+        }
+        try{
+            INSTANCE.ensureConnection(uri,databaseName);
+        } catch (IllegalStateException e) {
+            synchronized (MongoDBHelper.class){
+                INSTANCE = new MongoDBHelper(uri, databaseName);
+            }
+        }
+        return INSTANCE;
+    }
+
+    public static MongoDBHelper getInstance(String uri, String databaseName, String collectionName){
+        MongoDBHelper instance = getInstance(uri,databaseName);
+        instance.switchCollection(collectionName);
+        return instance;
+    }
+
+    private static void initMongoClient(String uri) {
+        if (mongoClient == null) {
+            synchronized (MongoDBHelper.class) {
+                if (mongoClient == null) {
+                    MongoClientSettings settings = MongoClientSettings.builder()
+                            .applyConnectionString(new ConnectionString(uri))
+                            .applyToClusterSettings(builder ->
+                                    builder.serverSelectionTimeout(30, TimeUnit.SECONDS))
+                            .applyToSocketSettings(builder -> {
+                                builder.connectTimeout(20, TimeUnit.SECONDS);
+                                builder.readTimeout(2, TimeUnit.MINUTES);
+                            })
+                            .applyToConnectionPoolSettings(builder -> {
+                                builder.maxSize(50);
+                                builder.maxConnectionIdleTime(6, TimeUnit.MINUTES);
+                                builder.maxConnectionLifeTime(60, TimeUnit.MINUTES);
+                            })
+                            .build();
+                    mongoClient = MongoClients.create(settings);
+                    System.out.println("MongoClient initialized.");
+                }
+            }
+        }
+    }
+
+    private MongoDBHelper(String uri, String databaseName) {
+        initMongoClient(uri);
+        this.database = mongoClient.getDatabase(databaseName);
+    }
+
+    private MongoDBHelper(String uri, String databaseName, String collectionName) {
+        initMongoClient(uri);
+        this.database = mongoClient.getDatabase(databaseName);
+        this.collection = database.getCollection(collectionName);
+    }
+
+    public void ensureConnection(String uri, String databaseName) {
+        try {
+            if (mongoClient == null || !isHealthy(mongoClient)) {
+                System.out.println("MongoDB connection lost, reconnecting...");
+                synchronized (MongoDBHelper.class) {
+                    mongoClient.close();
+                    mongoClient = null;
+                    initMongoClient(uri);
+                    this.database = mongoClient.getDatabase(databaseName);
+                    this.collection = null;
+                }
+            }
+        } catch (IllegalStateException e) {
+            System.out.println("MongoClient is closed, reinitializing...");
+            synchronized (MongoDBHelper.class) {
+                mongoClient.close();
+                mongoClient = null;
+                initMongoClient(uri);
+                this.database = mongoClient.getDatabase(databaseName);
+                this.collection = null;
+            }
+        }
+    }
+
+    private boolean isHealthy(MongoClient client) {
+        try {
+            /*
+            boolean selectable = client.getClusterDescription().hasReadableServer(ReadPreference.primaryPreferred());
+            if (!selectable) {
+                return false;
+            }
+            boolean clusterType = mongoClient.getClusterDescription().getType() == ClusterType.UNKNOWN;
+            if (!clusterType) {
+                return false;
+            }
+            */
+            client.getDatabase("admin").runCommand(new Document("ping", 1));
+            return true;
+        } catch (MongoException | IllegalStateException ex) {
+            return false;
+        }
+    }
+
+    public MongoDBHelper setCollection(String collectionName) {
+        return switchCollection(collectionName);
+    }
+
+    public MongoCollection<Document> getCollection() {
+        return collection;
+    }
+
+    public MongoDBHelper switchCollection(String collectionName) {
+        if (this.collection != null && this.collection.getNamespace().getCollectionName().equals(collectionName)) {
+            return this;
+        }
+        synchronized (this) {
+            this.collection = database.getCollection(collectionName);
+            System.out.printf("Switched to collection: %s%n", collectionName);
+        }
+        return this;
+    }
+
+    public void insertOne(Document document) {
+        collection.insertOne(document);
+    }
+
+    public void insertMany(List<Document> documents) {
+        collection.insertMany(documents);
+    }
+
+    public List<Document> findAll() {
+        return findAll(Sorts.descending("_id"), 0);
+    }
+
+    public List<Document> findAll(Bson sort) {
+        return findAll(sort, 0);
+    }
+
+    public List<Document> findAll(Bson sort, int limitNo) {
+        List<Document> documents = new ArrayList<>();
+        FindIterable<Document> iterable = collection.find().sort(sort);
+        if (limitNo > 0) {
+            iterable = iterable.limit(limitNo);
+        }
+        for (Document document : iterable) {
+            documents.add(document);
+        }
+        return documents;
+    }
+
+    private static Bson buildSmartFilter(String field, Object value) {
+        if (value instanceof Pattern) {
+            return Filters.regex(field, (Pattern) value);
+        }
+        if (value instanceof String str) {
+            if (str.contains("*") || str.contains("%") || str.contains("/")) {
+                String regex = str.replace("*", ".*").replace("%", ".*").replace("/", ".*");
+                return Filters.regex(field, Pattern.compile(regex, Pattern.CASE_INSENSITIVE));
+            }
+        }
+        if (value instanceof Map<?, ?> map) {
+            List<Bson> filters = new ArrayList<>();
+            Set<String> allowedOps = Set.of("$gt", "$lt", "$gte", "$lte", "$ne", "$in", "$nin", "$exists", "$type");
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                String op = entry.getKey().toString();
+                if (!allowedOps.contains(op)) {
+                    throw new IllegalArgumentException("Unsupported operator: " + op);
+                }
+                Object val = entry.getValue();
+                switch (op) {
+                    case "$gt" -> filters.add(Filters.gt(field, val));
+                    case "$lt" -> filters.add(Filters.lt(field, val));
+                    case "$gte" -> filters.add(Filters.gte(field, val));
+                    case "$lte" -> filters.add(Filters.lte(field, val));
+                    case "$ne" -> filters.add(Filters.ne(field, val));
+                    case "$in" -> filters.add(Filters.in(field, (List<?>) val));
+                    case "$nin" -> filters.add(Filters.nin(field, (List<?>) val));
+                    case "$exists" -> filters.add(Filters.exists(field, (Boolean) val));
+                    case "$type" -> filters.add(Filters.type(field, (BsonType) val));
+                    default -> filters.add(Filters.eq(field, val));
+                }
+            }
+            return Filters.and(filters);
+        }
+        return Filters.eq(field, value);
+    }
+
+    public static Bson builderConditions(Map<String, Object> conditions) {
+        return builderConditions(conditions, true);
+    }
+
+    public static Bson builderConditions(Map<String, Object> conditions, boolean isAnd) {
+        Bson[] filterArray = new Bson[conditions.size()];
+        int index = 0;
+        for (Map.Entry<String, Object> entry : conditions.entrySet()) {
+            filterArray[index++] = buildSmartFilter(entry.getKey(), entry.getValue());
+        }
+        return isAnd ? Filters.and(filterArray) : Filters.or(filterArray);
+    }
+
+    public List<Document> findByField(String field, Object value) {
+        Bson sort = Sorts.descending("_id");
+        return findByField(field, value, sort, 0);
+    }
+
+    public List<Document> findByField(String field, Object value, Bson sort) {
+        return findByField(field, value, sort, 0);
+    }
+
+    public List<Document> findByField(String field, Object value, Bson sort, int limitNo) {
+        List<Document> documents = new ArrayList<>();
+        Bson filter = buildSmartFilter(field, value);
+        FindIterable<Document> iterable = collection.find(filter).sort(sort);
+        if (limitNo > 0) {
+            iterable = iterable.limit(limitNo);
+        }
+        for (Document document : iterable) {
+            documents.add(document);
+        }
+        return documents;
+    }
+
+    public List<Document> findByMultipleFields(Map<String, Object> conditions) {
+        Bson sort = Sorts.descending("_id");
+        return findByMultipleFields(conditions, sort, 0);
+    }
+
+    public List<Document> findByMultipleFields(Map<String, Object> conditions, Bson sort) {
+        return findByMultipleFields(conditions, sort, 0);
+    }
+
+    public List<Document> findByMultipleFields(Map<String, Object> conditions, Bson sort, int limitNo) {
+        List<Document> documents = new ArrayList<>();
+        FindIterable<Document> iterable = collection.find(builderConditions(conditions)).sort(sort);
+        if (limitNo > 0) {
+            iterable = iterable.limit(limitNo);
+        }
+        for (Document document : iterable) {
+            documents.add(document);
+        }
+        return documents;
+    }
+
+    public void updateOne(String field, Object oldValue, String updateField, Object newValue) {
+        collection.updateOne(buildSmartFilter(field, oldValue), Updates.set(updateField, newValue));
+    }
+
+    /*
+    * 更新特定位置
+        collection.updateOne(
+        Filters.eq("_id", docId),
+        Updates.set("items.0.status", "completed")
+        )
+        *
+      更新所有位置
+        collection.updateOne(
+        Filters.eq("_id", docId),
+        Updates.set("items.$[].status", "completed")
+        )
+        *
+       通过条件过滤更新
+        collection.updateOne(
+        Filters.eq("_id", docId),
+        Updates.set("items.\$[elem].status", "completed"),
+        new UpdateOptions().arrayFilters([
+            Filters.eq("elem.itemId", "A001")
+        ])
+    * */
+    public void updateOne(String field, Object oldValue, String updateField, Object newValue, Map<String, Object> updateOptions) {
+        if (updateOptions != null) {
+            List<Bson> optionsList = new ArrayList<>();
+            for (Map.Entry<String, Object> entry : updateOptions.entrySet()) {
+                optionsList.add(buildSmartFilter(entry.getKey(), entry.getValue()));
+            }
+            collection.updateOne(buildSmartFilter(field, oldValue), Updates.set(updateField, newValue), new UpdateOptions().arrayFilters(optionsList));
+
+        } else {
+            collection.updateOne(buildSmartFilter(field, oldValue), Updates.set(updateField, newValue));
+        }
+    }
+
+    public void updateMany(Map<String, Object> conditions, Map<String, Object> updateFields) {
+        updateMany(conditions, updateFields, null);
+    }
+
+    public void updateMany(Map<String, Object> conditions, Map<String, Object> updateFields, Map<String, Object> updateOptions) {
+        Bson combinedFilter = builderConditions(conditions);
+
+        List<Bson> updateList = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : updateFields.entrySet()) {
+            updateList.add(Updates.set(entry.getKey(), entry.getValue()));
+        }
+        Bson combinedUpdate = Updates.combine(updateList);
+
+        if (updateOptions != null) {
+            collection.updateMany(combinedFilter, combinedUpdate, new UpdateOptions().arrayFilters(List.of(builderConditions(updateOptions))));
+        } else {
+            collection.updateMany(combinedFilter, combinedUpdate);
+        }
+    }
+
+
+    public void updateMany(Bson conditionFilter, Map<String, Object> updateFields, Map<String, Object> updateOptions) {
+        List<Bson> updateList = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : updateFields.entrySet()) {
+            updateList.add(Updates.set(entry.getKey(), entry.getValue()));
+        }
+        Bson combinedUpdate = Updates.combine(updateList);
+
+        if (updateOptions != null && !updateOptions.isEmpty()) {
+            collection.updateMany(conditionFilter, combinedUpdate, new UpdateOptions().arrayFilters(List.of(builderConditions(updateOptions))));
+        } else {
+            collection.updateMany(conditionFilter, combinedUpdate);
+        }
+    }
+
+
+    public void deleteOne(String field, Object value) {
+        collection.deleteOne(buildSmartFilter(field, value));
+    }
+
+    public void deleteMany(Map<String, Object> conditions) {
+        collection.deleteMany(builderConditions(conditions));
+    }
+
+    public void clearAll() {
+        collection.deleteMany(new Document());
+    }
+
+    public void deleteById(String id) {
+        ObjectId objectId = new ObjectId(id);
+        collection.deleteOne(Filters.eq("_id", objectId));
+    }
+
+    public Set<String> getAllKeys(Document document) {
+        Set<String> keys = new TreeSet<>();
+        getAllKeysRecursive(document, keys, "");
+        return keys;
+    }
+
+    private void getAllKeysRecursive(Document document, Set<String> keys, String parentKey) {
+        for (String key : document.keySet()) {
+            String fullKey = parentKey.isEmpty() ? key : parentKey + "." + key;
+            if (!parentKey.isEmpty()) {
+                keys.add(parentKey);
+            }
+            keys.add(fullKey);
+            Object value = document.get(key);
+            if (value instanceof Document) {
+                getAllKeysRecursive((Document) value, keys, fullKey);
+            }
+            if (value instanceof List) {
+                ((List<?>) value).forEach(item -> {
+                    if (item instanceof Document) {
+                        getAllKeysRecursive((Document) item, keys, fullKey);
+                    }
+                });
+            }
+        }
+    }
+
+    public static void close() {
+        if (mongoClient != null) {
+            mongoClient.close();
+            mongoClient = null;
+            System.out.println("MongoClient closed.");
+        }
+    }
+}
